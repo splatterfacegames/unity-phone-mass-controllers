@@ -1,0 +1,11 @@
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ogg binary
+*.wav binary
+*.mp4 binary
+*.webm binary
+*.unitypackage binary
+*.asset -text
+*.unity -text
+*.prefab -text

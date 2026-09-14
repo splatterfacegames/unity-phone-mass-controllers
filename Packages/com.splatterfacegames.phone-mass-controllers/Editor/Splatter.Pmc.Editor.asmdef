@@ -1,0 +1,19 @@
+{
+    "name": "Splatter.Pmc.Editor",
+    "rootNamespace": "Splatter.Pmc.Editor",
+    "references": [
+        "Splatter.Pmc",
+        "Splatter.Pmc.Core"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

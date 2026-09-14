@@ -1,0 +1,22 @@
+{
+  "name": "pmc-node-tests",
+  "private": true,
+  "description": "Node-side tests for godot-phone-mass-controllers: WebSocket interop (ws), load, and QR decoding.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test --test-concurrency=1 ws-interop.test.mjs && node qr-decode.mjs",
+    "test:ws": "node --test --test-concurrency=1 ws-interop.test.mjs",
+    "test:load": "node load.test.mjs",
+    "test:qr": "node qr-decode.mjs"
+  },
+  "devDependencies": {
+    "@zxing/library": "^0.23.0",
+    "jsqr": "^1.4.0",
+    "pngjs": "^7.0.0",
+    "qrcode": "^1.5.4",
+    "ws": "^8.18.0"
+  }
+}

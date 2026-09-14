@@ -1,0 +1,28 @@
+{
+  "name": "com.splatterfacegames.phone-mass-controllers",
+  "version": "0.1.0",
+  "displayName": "Phone Mass Controllers",
+  "description": "Turn a Unity game into the host for a room full of phone controllers. Players scan a QR code, their phone's browser loads a controller page served by the game itself — no app, no Node, no relay server. Pure C#. Inspired by HappyFunTimes. Port of godot-phone-mass-controllers.",
+  "unity": "2021.3",
+  "unityRelease": "0f1",
+  "license": "MIT",
+  "author": { "name": "splatterfacegames" },
+  "keywords": ["party", "phone", "controller", "websocket", "local-multiplayer", "jackbox"],
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
+  },
+  "samples": [
+    {
+      "displayName": "Buzzer Party",
+      "description": "Lobby + buzzer demo: QR join, per-phone secret symbol, buzz-on-your-symbol scoring.",
+      "path": "Samples~/BuzzerParty"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jethac/unity-phone-mass-controllers.git"
+  },
+  "relatedPackages": {},
+  "homepage": "https://pmc-unity.jethachan.net",
+  "documentationUrl": "https://github.com/jethac/unity-phone-mass-controllers#readme"
+}

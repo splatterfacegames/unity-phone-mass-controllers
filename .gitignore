@@ -1,0 +1,46 @@
+# Unity generated
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+
+# IDE
+.idea/
+.vs/
+.vscode/
+*.csproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Crash / audit
+crashlytics-build.properties
+sysinfo.txt
+*.stackdump
+
+# Local test artifacts
+tests/**/out/
+tests/**/bin/
+tests/**/obj/
+tools/**/__pycache__/
+export/
+*.unitypackage
+!tests/**/*.csproj
+!tools/**/*.csproj
