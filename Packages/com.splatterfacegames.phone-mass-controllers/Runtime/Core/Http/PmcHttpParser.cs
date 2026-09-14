@@ -13,7 +13,7 @@ namespace Splatter.Pmc {
         // Strict UTF-8: throws on invalid sequences (Godot's get_string_from_utf8 + round-trip check).
         internal static readonly UTF8Encoding StrictUtf8 = new UTF8Encoding(false, true);
         // Byte→char identity for header blocks (HTTP/1.x historically ISO-8859-1).
-        internal static readonly Encoding Latin1 = Encoding.Latin1;
+        internal static readonly Encoding Latin1 = Encoding.GetEncoding("ISO-8859-1"); // Encoding.Latin1 isn't in .NET Standard 2.1
 
         /// <summary>
         /// Finds the end of the header block in <paramref name="buf"/>, starting at <paramref name="from"/>

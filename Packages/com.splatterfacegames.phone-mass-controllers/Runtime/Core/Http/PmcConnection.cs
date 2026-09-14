@@ -523,11 +523,10 @@ namespace Splatter.Pmc {
     /// <summary>Monotonic/epoch clocks used across the host (Godot Time.get_ticks_msec /
     /// get_unix_time_from_system equivalents).</summary>
     internal static class PmcTime {
-        private static readonly long T0 = Environment.TickCount64;
-
         /// <summary>Milliseconds since an arbitrary epoch (monotonic tick).</summary>
         internal static long NowMsec() {
-            return Environment.TickCount64;
+            // Stopwatch: Environment.TickCount64 isn't in .NET Standard 2.1.
+            return System.Diagnostics.Stopwatch.GetTimestamp() * 1000 / System.Diagnostics.Stopwatch.Frequency;
         }
 
         /// <summary>Microseconds for poll timing.</summary>

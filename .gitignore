@@ -48,3 +48,6 @@ export/
 # Node
 node_modules/
 tests/node/out/
+
+# Unity batchmode logs
+*.log
