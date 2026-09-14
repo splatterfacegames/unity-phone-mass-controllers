@@ -1,0 +1,4 @@
+2026-09-14T09:00:00Z INF Thank you for trying Cloudflare Tunnel. Doing so, without a Cloudflare account, is a quick way to experiment and try it out.
+2026-09-14T09:00:00Z INF Requesting new quick Tunnel on trycloudflare.com...
+2026-09-14T09:00:01Z ERR Error unmarshaling QuickTunnel response: error code: 1015 error="invalid character 'e' looking for beginning of value" status_code="429 Too Many Requests"
+failed to unmarshal quick Tunnel: invalid character 'e' looking for beginning of value

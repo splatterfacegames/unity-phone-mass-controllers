@@ -1,0 +1,10 @@
+2026-09-14T09:00:00Z INF Thank you for trying Cloudflare Tunnel. Doing so, without a Cloudflare account, is a quick way to experiment and try it out.
+2026-09-14T09:00:00Z INF Requesting new quick Tunnel on trycloudflare.com...
+2026-09-14T09:00:01Z INF +--------------------------------------------------------------------------------------------+
+2026-09-14T09:00:01Z INF |  Your quick Tunnel has been created! Visit it at (it may take some time to be reachable):  |
+2026-09-14T09:00:01Z INF |  https://quic-blocked-words.trycloudflare.com                                              |
+2026-09-14T09:00:01Z INF +--------------------------------------------------------------------------------------------+
+2026-09-14T09:00:02Z INF Initial protocol quic
+2026-09-14T09:00:03Z ERR Failed to create new quic connection error="timeout: no recent network activity" connIndex=0
+2026-09-14T09:00:06Z ERR Serve tunnel error error="timeout: no recent network activity" connIndex=0
+2026-09-14T09:00:10Z ERR Connection terminated error="timeout: no recent network activity" connIndex=0 event=0
