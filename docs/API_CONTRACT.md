@@ -164,7 +164,7 @@ public sealed class PmcRotation { Next(winner, loser) strategies: WinnerStays/Lo
 ## Wire protocol (identical to Godot — port `SPEC.md` semantics)
 
 - Same port: HTTP/1.1 + WS upgrade; `/` = controller dir, `/pmc/pmc.js`, `/pmc/qr.png`,
-  `/pmc/info.json`, `/ws` = socket.
+  `/pmc/info.json`, `/pmc/ws` = socket.
 - Client→host: `pmc.hello`(`sdk:1,token?,name?,profile?,code?`), `pmc.ping`(`c` epoch ms),
   `pmc.profile`, `pmc.auth`(`pin`), `pmc.leave`, `msg`(`d`).
 - Host→client: `pmc.welcome`(`id,token,name,profile,rejoined,admin,server_ms`(epoch ms),`join_url`),
