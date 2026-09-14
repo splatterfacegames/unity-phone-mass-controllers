@@ -31,7 +31,25 @@ https://github.com/jethac/unity-phone-mass-controllers.git?path=/Packages/com.sp
 ```
 
 **unitypackage:** download `phone-mass-controllers.unitypackage` from
-[Releases](https://github.com/jethac/unity-phone-mass-controllers/releases) → Assets → Import Package.
+[Releases](https://github.com/jethac/unity-phone-mass-controllers/releases) (built by CI on every `v*` tag)
+→ **Assets → Import Package → Custom Package**. Unity packages can't write into `Packages/`, so it
+imports under `Assets/PhoneMassControllers/`:
+
+| Repo path | Imported as |
+|---|---|
+| `Packages/…/Runtime`, `Editor`, `Web`, `package.json` | `Assets/PhoneMassControllers/{Runtime,Editor,Web,package.json}` |
+| `Packages/…/Samples~/BuzzerParty` | `Assets/PhoneMassControllers/Samples/BuzzerParty` |
+| `LICENSE`, `CHANGELOG.md` | `Assets/PhoneMassControllers/{LICENSE.md,CHANGELOG.md}` |
+
+Both install routes give you the same assemblies — `Splatter.Pmc` / `Splatter.Pmc.Core` /
+`Splatter.Pmc.Editor` asmdefs — and the same `PmcHost` component.
+
+## Requirements
+
+- Unity **2021.3+** (developed on Unity 6 / 6000.3.24f1), any render pipeline
+- `com.unity.nuget.newtonsoft-json` (declared as a UPM dependency; with the unitypackage,
+  install it from Package Manager if prompted)
+- Tunnel feature spawns `cloudflared` — desktop editor/player platforms only (Windows/macOS/Linux)
 
 ## Quickstart
 
@@ -62,12 +80,6 @@ Controller pages are plain HTML/JS importing `pmc.js`:
 ```
 
 See the **Buzzer Party** sample (Package Manager → Samples) and [SPEC.md](SPEC.md).
-
-## Requirements
-
-- Unity **2021.3+** (developed on Unity 6 / 6000.3.24f1)
-- `com.unity.nuget.newtonsoft-json` (declared as a UPM dependency)
-- Tunnel feature spawns `cloudflared` — desktop platforms only (Windows/macOS/Linux)
 
 ## License
 

@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Package sanity
+        run: python tools/check_package.py
+
+      - name: Tag must match package.json version
+        run: |
+          pkg=$(python -c "import json; print(json.load(open('Packages/com.splatterfacegames.phone-mass-controllers/package.json'))['version'])")
+          tag="${GITHUB_REF_NAME#v}"
+          if [ "$pkg" != "$tag" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match package.json version $pkg"
+            exit 1
+          fi
+
+      - name: Build .unitypackage
+        run: python tools/make_unitypackage.py --out dist/phone-mass-controllers.unitypackage
+
+      - name: Extract release notes from CHANGELOG.md
+        run: |
+          ver="${GITHUB_REF_NAME#v}"
+          awk -v v="$ver" '
+            $0 ~ "^## \\[?" v "\\]?([[:space:]-]|$)" { inblock=1; next }
+            inblock && /^## / { exit }
+            inblock { print }
+          ' CHANGELOG.md | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}' > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "## What's Changed" > release-notes.md
+            echo "" >> release-notes.md
+            echo "See CHANGELOG.md." >> release-notes.md
+          fi
+          cat release-notes.md
+
+      - name: Create GitHub release
+        run: gh release create "$GITHUB_REF_NAME" dist/phone-mass-controllers.unitypackage \
+               --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --notes-file release-notes.md
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
