@@ -139,10 +139,18 @@ public sealed class PmcHttpResponse {
 ```
 
 ```csharp
+public sealed class PmcQrMatrix {                     // a finished symbol
+    int Size { get; } int Version { get; } int Ecc { get; } int Mask { get; } string Mode { get; }
+    bool this[int x, int y] { get; }                  // true = dark module
+    string[] ToRows();                                // "0101" rows for test corpora
+}
 public static class PmcQr {
-    enum Ecc { L, M, Q, H }
-    bool[,] Encode(string text, Ecc ecc = Ecc.M);     // true = dark module
-    byte[] EncodePng(string text, Ecc ecc, int modulePx, int quiet);  // minimal PNG (no engine deps)
+    enum Ecc { L = 0, M = 1, Q = 2, H = 3 }
+    static PmcQrMatrix Encode(string text, Ecc ecc = Ecc.M);
+    static PmcQrMatrix EncodeAdvanced(string text, Ecc ecc = Ecc.M,
+        int minVersion = 1, int maxVersion = 40, int mask = -1, string mode = "");
+                                                // mode: ""|"byte"|"alphanumeric"|"numeric"; null on failure
+    static byte[] EncodePng(PmcQrMatrix m, int modulePx = 4, int quiet = 4);   // minimal PNG, no engine deps
 }
 ```
 

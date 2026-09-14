@@ -20,9 +20,9 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/jethac/unity-phone-mass-controllers.git"
+    "url": "https://github.com/splatterfacegames/unity-phone-mass-controllers.git"
   },
   "relatedPackages": {},
   "homepage": "https://pmc-unity.jethachan.net",
-  "documentationUrl": "https://github.com/jethac/unity-phone-mass-controllers#readme"
+  "documentationUrl": "https://github.com/splatterfacegames/unity-phone-mass-controllers#readme"
 }

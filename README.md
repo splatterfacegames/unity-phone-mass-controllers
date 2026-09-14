@@ -27,11 +27,11 @@ Unity port of [godot-phone-mass-controllers](https://github.com/splatterfacegame
 **UPM (recommended):** Package Manager → `+` → *Add package from git URL…*
 
 ```
-https://github.com/jethac/unity-phone-mass-controllers.git?path=/Packages/com.splatterfacegames.phone-mass-controllers
+https://github.com/splatterfacegames/unity-phone-mass-controllers.git?path=/Packages/com.splatterfacegames.phone-mass-controllers
 ```
 
 **unitypackage:** download `phone-mass-controllers.unitypackage` from
-[Releases](https://github.com/jethac/unity-phone-mass-controllers/releases) → Assets → Import Package.
+[Releases](https://github.com/splatterfacegames/unity-phone-mass-controllers/releases) → Assets → Import Package.
 
 ## Quickstart
 
