@@ -44,3 +44,7 @@ export/
 *.unitypackage
 !tests/**/*.csproj
 !tools/**/*.csproj
+
+# Local Unity batchmode logs
+/upmc-unity.log
+*.log.meta
