@@ -80,18 +80,11 @@ namespace Splatter.Pmc
         /// <summary>
         /// Encodes <paramref name="text"/> with error correction level <paramref name="ecc"/>,
         /// choosing the smallest version that fits and the best mask.
-        /// Returns the module grid (true = dark), or null if the text does not fit in version 40.
+        /// Returns the finished symbol, or null if the text does not fit in version 40.
         /// </summary>
-        public static bool[,] Encode(string text, Ecc ecc = Ecc.M)
+        public static PmcQrMatrix Encode(string text, Ecc ecc = Ecc.M)
         {
-            var m = EncodeAdvanced(text, ecc);
-            if (m == null)
-                return null;
-            var grid = new bool[m.Size, m.Size];
-            for (int y = 0; y < m.Size; y++)
-                for (int x = 0; x < m.Size; x++)
-                    grid[y, x] = m.Modules[y * m.Size + x] != 0;
-            return grid;
+            return EncodeAdvanced(text, ecc);
         }
 
         /// <summary>
@@ -223,7 +216,7 @@ namespace Splatter.Pmc
         /// <paramref name="modulePx"/> pixels per module and a quiet zone of
         /// <paramref name="quiet"/> modules on each side. Returns null for a null matrix.
         /// </summary>
-        public static byte[] EncodePng(PmcQrMatrix m, int modulePx, int quiet)
+        public static byte[] EncodePng(PmcQrMatrix m, int modulePx = 4, int quiet = 4)
         {
             if (m == null)
                 return null;
@@ -498,7 +491,7 @@ namespace Splatter.Pmc
                 int start = y * w + 1;
                 Array.Copy(bestR, start, outBytes, y * size, size);
             }
-            return new PmcQrMatrix { Size = size, Version = ver, Ecc = (Ecc)ecc, Mask = best, Modules = outBytes };
+            return new PmcQrMatrix { Size = size, Version = ver, Ecc = ecc, Mask = best, Modules = outBytes };
         }
 
         private static Layout GetLayout(int ver)

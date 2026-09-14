@@ -121,8 +121,8 @@ internal static class Program
         {
             { "name", name },
             { "text", text },
-            { "ecc", (int)m.Ecc },
-            { "level", Levels[(int)m.Ecc] },
+            { "ecc", m.Ecc },
+            { "level", Levels[m.Ecc] },
             { "version", m.Version },
             { "mask", m.Mask },
             { "mode", m.Mode },

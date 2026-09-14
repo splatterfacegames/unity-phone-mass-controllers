@@ -217,7 +217,7 @@ namespace Splatter.Pmc.Tests
             var url = PmcQr.EncodeAdvanced("http://192.168.1.87:8086/?code=ABCD");
             Assert.AreEqual(3, url.Version, "LAN URL at M fits version 3");
             Assert.AreEqual("byte", url.Mode);
-            Assert.AreEqual(PmcQr.Ecc.M, url.Ecc, "default level is M");
+            Assert.AreEqual((int)PmcQr.Ecc.M, url.Ecc, "default level is M");
             Assert.AreEqual(29, url.Size);
             Assert.AreEqual("alphanumeric", PmcQr.EncodeAdvanced("HELLO WORLD", PmcQr.Ecc.Q).Mode);
             Assert.AreEqual("numeric", PmcQr.EncodeAdvanced("0123456789").Mode);
@@ -229,14 +229,13 @@ namespace Splatter.Pmc.Tests
         [Test]
         public void EncodeReturnsModuleGrid()
         {
-            var grid = PmcQr.Encode("HELLO WORLD");
+            var simple = PmcQr.Encode("HELLO WORLD");
             var m = PmcQr.EncodeAdvanced("HELLO WORLD");
-            Assert.IsNotNull(grid);
-            Assert.AreEqual(m.Size, grid.GetLength(0));
-            Assert.AreEqual(m.Size, grid.GetLength(1));
+            Assert.IsNotNull(simple);
+            Assert.AreEqual(m.Size, simple.Size);
             for (int y = 0; y < m.Size; y++)
                 for (int x = 0; x < m.Size; x++)
-                    Assert.AreEqual(m.GetModule(x, y), grid[y, x], $"module {x},{y}");
+                    Assert.AreEqual(m.GetModule(x, y), simple[x, y], $"module {x},{y}");
             Assert.IsNull(PmcQr.Encode(new string('a', 3000)), "oversize text returns null");
         }
 

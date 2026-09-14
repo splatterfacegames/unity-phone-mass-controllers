@@ -9,17 +9,26 @@ namespace Splatter.Pmc
     public sealed class PmcQrMatrix
     {
         /// <summary>Width and height in modules (17 + 4 * version).</summary>
-        public int Size;
+        public int Size { get; internal set; }
         /// <summary>QR version, 1..40.</summary>
-        public int Version;
-        /// <summary>Error correction level used.</summary>
-        public PmcQr.Ecc Ecc;
+        public int Version { get; internal set; }
+        /// <summary>Error correction level used: 0=L, 1=M, 2=Q, 3=H.</summary>
+        public int Ecc { get; internal set; }
         /// <summary>Mask pattern applied, 0..7.</summary>
-        public int Mask;
+        public int Mask { get; internal set; }
         /// <summary>Encoding mode used for the payload: "numeric", "alphanumeric" or "byte".</summary>
-        public string Mode = "";
+        public string Mode { get; internal set; } = "";
         /// <summary>Row-major module data, 1 = dark. Index is <c>y * Size + x</c>.</summary>
-        public byte[] Modules = new byte[0];
+        public byte[] Modules { get; internal set; } = new byte[0];
+
+        /// <summary>
+        /// True if the module at column <paramref name="x"/>, row <paramref name="y"/> is dark.
+        /// Coordinates outside the symbol return false (light, like the quiet zone).
+        /// </summary>
+        public bool this[int x, int y]
+        {
+            get { return GetModule(x, y); }
+        }
 
         /// <summary>
         /// Returns true if the module at column <paramref name="x"/>, row <paramref name="y"/> is dark.
