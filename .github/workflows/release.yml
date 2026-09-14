@@ -36,7 +36,7 @@ jobs:
         run: |
           ver="${GITHUB_REF_NAME#v}"
           awk -v v="$ver" '
-            $0 ~ "^## \\[?" v "\\]?([[:space:]-]|$)" { inblock=1; next }
+            index($0, "## " v) == 1 || index($0, "## [" v "]") == 1 { inblock=1; next }
             inblock && /^## / { exit }
             inblock { print }
           ' CHANGELOG.md | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}' > release-notes.md

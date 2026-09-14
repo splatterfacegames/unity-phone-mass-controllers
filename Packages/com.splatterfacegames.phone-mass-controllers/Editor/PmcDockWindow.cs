@@ -188,7 +188,9 @@ namespace Splatter.Pmc.Editor {
                     EditorStyles.wordWrappedMiniLabel);
                 return;
             }
-            foreach (var host in hosts) {
+            // The registry is live (hosts join/leave during play-mode transitions);
+            // draw from a snapshot so a mid-OnGUI change can't trip the loop.
+            foreach (var host in new List<PmcHost>(hosts)) {
                 if (host == null) continue;
                 DrawHost(host);
             }
