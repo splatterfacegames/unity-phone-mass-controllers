@@ -1,0 +1,14 @@
+2026-09-14T09:00:00Z INF Thank you for trying Cloudflare Tunnel. Doing so, without a Cloudflare account, is a quick way to experiment and try it out. However, be aware that these account-less Tunnels have no uptime guarantee, are subject to the Cloudflare Online Services Terms of Use (https://www.cloudflare.com/website-terms/), and Cloudflare reserves the right to investigate your use of Tunnels for violations of such terms. If you intend to use Tunnels in production you should use a pre-created named tunnel by following: https://developers.cloudflare.com/cloudflare-one/connections/connect-apps
+2026-09-14T09:00:00Z INF Requesting new quick Tunnel on trycloudflare.com...
+2026-09-14T09:00:01Z INF +--------------------------------------------------------------------------------------------+
+2026-09-14T09:00:01Z INF |  Your quick Tunnel has been created! Visit it at (it may take some time to be reachable):  |
+2026-09-14T09:00:01Z INF |  https://random-words-here.trycloudflare.com                                               |
+2026-09-14T09:00:01Z INF +--------------------------------------------------------------------------------------------+
+2026-09-14T09:00:01Z INF Cannot determine default configuration path. No file [config.yml config.yaml] in [~/.cloudflared ~/.cloudflare-warp ~/cloudflare-warp /etc/cloudflared /usr/local/etc/cloudflared]
+2026-09-14T09:00:01Z INF Version 2025.8.1 (Checksum 0000000000000000000000000000000000000000000000000000000000000000)
+2026-09-14T09:00:01Z INF GOOS: windows, GOVersion: go1.24.4, GoArch: amd64
+2026-09-14T09:00:01Z INF Settings: map[ha-connections:1 no-autoupdate:true protocol:quic url:http://127.0.0.1:8080]
+2026-09-14T09:00:01Z INF Generated Connector ID: 2f6a1c0e-6a3e-4b8e-9d1f-5b2b8a7c9e10
+2026-09-14T09:00:01Z INF Initial protocol quic
+2026-09-14T09:00:01Z INF ICMP proxy will use 192.168.1.87 as source for IPv4
+2026-09-14T09:00:01Z INF Starting metrics server on 127.0.0.1:20241/metrics

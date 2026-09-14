@@ -10,7 +10,6 @@
   <ItemGroup>
     <!-- Every Core file compiles here too; keep Runtime/Core engine-free. -->
     <Compile Include="..\..\Packages\com.splatterfacegames.phone-mass-controllers\Runtime\Core\**\*.cs" />
-    <Compile Include="**\*.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NUnit" Version="4.2.2" />

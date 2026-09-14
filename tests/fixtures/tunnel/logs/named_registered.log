@@ -1,0 +1,6 @@
+2026-09-14T09:00:00Z INF Version 2025.8.1 (Checksum 0000000000000000000000000000000000000000000000000000000000000000)
+2026-09-14T09:00:00Z INF GOOS: windows, GOVersion: go1.24.4, GoArch: amd64
+2026-09-14T09:00:01Z INF Initial protocol quic
+2026-09-14T09:00:01Z INF ICMP proxy will use 192.168.1.87 as source for IPv4
+2026-09-14T09:00:01Z INF Starting metrics server on 127.0.0.1:20241/metrics
+2026-09-14T09:00:02Z INF Registered tunnel connection connIndex=0 connection=8e7d6c5b-4a39-4281-b1f0-0e9d8c7b6a59 event=0 ip=198.41.200.193 location=nrt01 protocol=quic
