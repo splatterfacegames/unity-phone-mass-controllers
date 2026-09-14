@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  dotnet:
+    name: Core tests (dotnet, ${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+      - name: NUnit core suite (compiles Runtime/Core without Unity)
+        run: dotnet test tests/dotnet -c Release
+
+  node-interop:
+    name: Node interop + QR corpus
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install node deps
+        run: npm ci
+        working-directory: tests/node
+      - name: Build C# test harnesses (ws interop + QR dump)
+        run: |
+          dotnet build tests/harness
+          dotnet build tests/qr-dump
+      - name: WebSocket interop vs the C# host
+        run: npm run test:ws
+        working-directory: tests/node
+      - name: QR decode corpus
+        run: node qr-decode.mjs
+        working-directory: tests/node
+
+  package:
+    name: Package checks + .unitypackage
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Package sanity (.meta coverage, asmdefs, no engine refs in Core)
+        run: python tools/check_package.py
+      - name: Build .unitypackage
+        run: python tools/make_unitypackage.py --out dist/phone-mass-controllers.unitypackage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phone-mass-controllers.unitypackage
+          path: dist/phone-mass-controllers.unitypackage
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  # Unity batchmode compile check — disabled by default (needs a Unity license).
+  #
+  # To enable:
+  #   1. Add a repository variable:  Settings → Secrets and variables → Actions →
+  #      Variables → UNITY_CI_ENABLED = true
+  #   2. Add the UNITY_LICENSE secret (contents of a Unity .ulf license file —
+  #      see https://game.ci/docs/github/activation). Personal licenses work.
+  #   3. game-ci/unity-test-runner activates the license, compiles every asmdef
+  #      (a compile failure fails the job), then runs the EditMode/PlayMode UTF
+  #      suites under Tests~/.
+  #
+  # Non-personal licenses: game-ci also supports UNITY_EMAIL / UNITY_PASSWORD /
+  # UNITY_SERIAL secrets instead of UNITY_LICENSE — see their docs.
+  # ---------------------------------------------------------------------------
+  unity:
+    name: Unity compile + UTF tests
+    if: vars.UNITY_CI_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      # Batchmode refuses a project path with no Assets/ dir; the package itself
+      # doesn't add one (the demo does, but don't depend on that).
+      - run: mkdir -p Assets
+      - uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        with:
+          projectPath: .
+          unityVersion: auto
+          testMode: all
+          artifactsPath: test-artifacts
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: unity-test-artifacts
+          path: test-artifacts

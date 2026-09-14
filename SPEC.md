@@ -233,18 +233,28 @@ another provider, see docs/tunnels.md) for anything you want to print or keep.
 
 ## 6. Unity editor integration
 
+Install via UPM git URL
+`https://github.com/splatterfacegames/unity-phone-mass-controllers.git?path=/Packages/com.splatterfacegames.phone-mass-controllers`
+or the `phone-mass-controllers.unitypackage` attached to each release (imports into
+`Assets/PhoneMassControllers/` — see README for the mapping).
+
 `PmcHost` is a `MonoBehaviour` in *Add Component → Splatter → Phone Mass Controllers*. The package adds a
 **Window → Phone Controllers** dockable window that shows live host status and offers "Download cloudflared",
-a throwaway test tunnel, and docs links.
+a throwaway test tunnel (quick or named) against a tiny local page, and docs links.
 
 - **Live status.** Play mode runs in-process, so the dock reads `PmcLiveHosts.All` — a static registry each
-  running `PmcHost` joins — directly: port, join URL + QR preview, connected players, tunnel state. No
-  debugger channel needed (simpler than the Godot version).
+  running `PmcHost` joins — directly: port, join URL + QR preview, connected players (name/id/rtt/state),
+  tunnel state, and per-host tunnel controls (quick test tunnel, named token+hostname, stop). No debugger
+  channel needed (simpler than the Godot version).
 - **Edit-mode hosting.** `PmcHost` can run in edit mode too (useful for testing controllers without Play):
   the same pump runs off `EditorApplication.update` inside `#if UNITY_EDITOR`.
-- **Builds.** A build preprocessor copies each `PmcHost`'s `ControllerDir` (project-relative) plus the
-  package `Web/` SDK into `StreamingAssets/pmc/` before a player build, so served files survive import
-  settings. ServeDirectory paths inside `Assets/` resolve the same way at runtime.
+- **Builds.** A build preprocessor copies each `PmcHost`'s `ControllerDir` under `Assets/` — found by
+  scanning the open + build-profile scenes, plus `ServeDirectory`/`ControllerDir` string literals in
+  `Assets/**/*.cs` — into `StreamingAssets/pmc/<basename>` before a player build, and the package `Web/`
+  SDK into `StreamingAssets/pmc/web`, so served files survive import settings. The staged tree is removed
+  again after the build (`PMC_KEEP_STREAMINGASSETS=1` or the menu toggle keeps it). At runtime,
+  `Assets/Foo/Bar` resolves to `Application.streamingAssetsPath + "/pmc/Bar"`; `ServeDirectory` paths
+  inside `Assets/` resolve the same way. See [docs/exporting.md](docs/exporting.md).
 
 ## 7. Repo layout
 
