@@ -1,25 +1,40 @@
-// Spawns the headless Godot echo host (res://tests/lib/pmc_test_server.gd) and resolves once it listens.
-import { spawn } from 'node:child_process';
+// Spawns the headless C# echo host (tests/harness, PmcHostCore) and resolves once it listens.
+// Same contract as the Godot harness it replaces: prints "PMC_READY port=<n>".
+import { spawn, execFileSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { existsSync } from 'node:fs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 export const repo = resolve(here, '..', '..');
+const csproj = resolve(here, '..', 'harness', 'PmcHarness.csproj');
+const dll = resolve(here, '..', 'harness', 'bin', 'Release', 'net8.0', 'PmcHarness.dll');
+
+let buildPromise = null;
+function build() {
+  if (!buildPromise) {
+    buildPromise = Promise.resolve().then(() => {
+      execFileSync('dotnet', ['build', csproj, '-c', 'Release', '--nologo', '-v', 'q'], { stdio: 'inherit' });
+      if (!existsSync(dll)) throw new Error('harness build produced no ' + dll);
+    });
+  }
+  return buildPromise;
+}
 
 /**
  * @param {Record<string,string|number>} args e.g. { heartbeat: 0.3 }
  * @returns {Promise<{port:number, proc:import('node:child_process').ChildProcess, output:()=>string, stop:()=>Promise<void>}>}
  */
-export function startGodotServer(args = {}) {
-  const godot = process.env.GODOT || 'godot';
-  const argv = ['--headless', '--path', repo, '--script', 'res://tests/lib/pmc_test_server.gd', '--'];
+export async function startCSharpServer(args = {}) {
+  await build();
+  const argv = [dll];
   for (const [k, v] of Object.entries(args)) argv.push(`--${k}=${v}`);
-  const proc = spawn(godot, argv, { stdio: ['ignore', 'pipe', 'pipe'] });
+  const proc = spawn('dotnet', argv, { stdio: ['ignore', 'pipe', 'pipe'] });
   let out = '';
   return new Promise((resolvePromise, reject) => {
     const timer = setTimeout(() => {
       proc.kill();
-      reject(new Error('Godot server did not start in 60 s. Output:\n' + out));
+      reject(new Error('C# harness did not start in 60 s. Output:\n' + out));
     }, 60000);
     const onData = (chunk) => {
       out += chunk.toString();
@@ -45,7 +60,7 @@ export function startGodotServer(args = {}) {
     proc.once('error', (e) => { clearTimeout(timer); reject(e); });
     proc.once('exit', (code) => {
       clearTimeout(timer);
-      reject(new Error(`Godot exited early (code ${code}). Output:\n${out}`));
+      reject(new Error(`PmcHarness exited early (code ${code}). Output:\n${out}`));
     });
   });
 }

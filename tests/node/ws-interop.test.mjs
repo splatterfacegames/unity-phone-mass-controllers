@@ -1,17 +1,17 @@
-// RFC 6455 interop between the Godot host (pure GDScript server) and the Node `ws` client,
-// plus raw-socket protocol violations. Run: npm test (GODOT = Godot executable).
+// RFC 6455 interop between the C# host (PmcHostCore via tests/harness) and the Node `ws` client,
+// plus raw-socket protocol violations. Run: npm test (requires the .NET SDK).
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import net from 'node:net';
 import crypto from 'node:crypto';
 import WebSocket from 'ws';
-import { startGodotServer } from './godot-server.mjs';
+import { startCSharpServer } from './csharp-server.mjs';
 
 let server;
 let url;
 
 before(async () => {
-  server = await startGodotServer({ heartbeat: 0.3, grace: 1 });
+  server = await startCSharpServer({ heartbeat: 0.3, grace: 1 });
   url = `ws://127.0.0.1:${server.port}/pmc/ws`;
 });
 

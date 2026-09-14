@@ -10,7 +10,8 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
   <ItemGroup>
-    <!-- Every Core file compiles here too; keep Runtime/Core engine-free. -->
+    <!-- Every Core file compiles here too; keep Runtime/Core engine-free. Test files in this
+         project dir are picked up by the SDK default include. -->
     <Compile Include="..\..\Packages\com.splatterfacegames.phone-mass-controllers\Runtime\Core\**\*.cs" />
     <Compile Include="**\*.cs" Exclude="bin\**\*.cs;obj\**\*.cs" />
   </ItemGroup>

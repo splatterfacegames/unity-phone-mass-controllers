@@ -1,12 +1,12 @@
-// Load test: 200 concurrent WebSocket clients against the headless Godot host (60 fps cap).
+// Load test: 200 concurrent WebSocket clients against the headless C# host (60 fps cap).
 // Measures host poll time per frame and frame-time distribution, plus echo round-trip latency.
-// Run: npm run test:load   (GODOT = Godot executable; CLIENTS, SECONDS env overrides)
+// Run: npm run test:load   (requires the .NET SDK; CLIENTS, SECONDS env overrides)
 // Exit code 1 if messages are lost or the host stops keeping up.
 import WebSocket from 'ws';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { startGodotServer } from './godot-server.mjs';
+import { startCSharpServer } from './csharp-server.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const CLIENTS = Number(process.env.CLIENTS || 200);
@@ -96,7 +96,7 @@ function pick(s) {
 }
 
 const BUDGET = Number(process.env.BUDGET_MS || 8);
-const server = await startGodotServer({ fps: 60, heartbeat: 15, budget: BUDGET });
+const server = await startCSharpServer({ fps: 60, heartbeat: 15, budget: BUDGET });
 console.log(`host io_budget_msec = ${BUDGET}`);
 let failed = false;
 try {
