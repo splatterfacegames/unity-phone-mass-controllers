@@ -35,8 +35,9 @@ namespace Splatter.Pmc {
                 outp[i++] = (byte)(n & 0xFF);
             } else {
                 outp[i++] = (byte)(mbit | 127);
+                long big = n;
                 for (int s = 7; s >= 0; s--) {
-                    outp[i++] = (byte)((n >> (s * 8)) & 0xFF);
+                    outp[i++] = (byte)((big >> (s * 8)) & 0xFF);
                 }
             }
             if (masked) {

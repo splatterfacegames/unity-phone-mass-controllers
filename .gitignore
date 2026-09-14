@@ -44,3 +44,7 @@ export/
 *.unitypackage
 !tests/**/*.csproj
 !tools/**/*.csproj
+
+# Node
+node_modules/
+tests/node/out/
