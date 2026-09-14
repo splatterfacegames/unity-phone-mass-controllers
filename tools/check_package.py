@@ -139,8 +139,12 @@ def main() -> int:
     check_core_is_engine_free(repo, problems)
     check_upm_url(repo, problems)
 
-    # .meta coverage: Assets/ plus every embedded package (Packages/<dir with package.json>).
-    collect_unmetaed(os.path.join(repo, "Assets"), problems)
+    # .meta coverage: Assets/ (incl. Assets.meta itself) plus every embedded
+    # package (Packages/<dir with package.json>).
+    assets = os.path.join(repo, "Assets")
+    if os.path.isdir(assets) and not os.path.isfile(assets + ".meta"):
+        problems.append("missing dir .meta: Assets")
+    collect_unmetaed(assets, problems)
     pkg_root = os.path.join(repo, "Packages")
     if os.path.isdir(pkg_root):
         for name in sorted(os.listdir(pkg_root)):
