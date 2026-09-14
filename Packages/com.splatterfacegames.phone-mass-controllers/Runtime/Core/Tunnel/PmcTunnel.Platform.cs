@@ -658,6 +658,10 @@ namespace Splatter.Pmc
                         KillTree(p);
                         return -1;
                     }
+                    // WaitForExit(ms) can return before the async pipe readers drain on Unix,
+                    // which would report an empty output for fast-exiting children.
+                    try { System.Threading.Tasks.Task.WaitAll(new System.Threading.Tasks.Task[] { so, se }, 5000); }
+                    catch { }
                     output = (SafeResult(so) + SafeResult(se)).Trim();
                     return p.ExitCode;
                 }
