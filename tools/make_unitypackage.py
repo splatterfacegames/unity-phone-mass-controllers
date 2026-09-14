@@ -243,7 +243,7 @@ def validate_unity(out_path: str) -> None:
     if not unity:
         print("make_unitypackage: UNITY_EXE not set; skipping real-import validation")
         return
-    with tempfile.TemporaryDirectory(prefix="pmc-pkgcheck-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="pmc-pkgcheck-", ignore_cleanup_errors=True) as tmp:
         log = os.path.join(tmp, "unity.log")
         cmd = [unity, "-batchmode", "-nographics", "-quit", "-createProject", tmp,
                "-importPackage", os.path.abspath(out_path), "-logFile", log]

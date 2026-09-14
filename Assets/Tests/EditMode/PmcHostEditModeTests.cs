@@ -260,8 +260,9 @@ namespace Splatter.Pmc.Tests
             h.gameObject.SetActive(true);
             Assert.IsTrue(PmcLiveHosts.All.Contains(h));
 
-            Object.DestroyImmediate(h.gameObject);
-            _objects.Remove(h.gameObject);
+            GameObject go = h.gameObject;
+            Object.DestroyImmediate(go);
+            _objects.Remove(go);
             Assert.IsFalse(PmcLiveHosts.All.Contains(h));
             Assert.AreEqual(before, PmcLiveHosts.All.Count);
         }
@@ -276,8 +277,9 @@ namespace Splatter.Pmc.Tests
             {
                 PmcHost h = NewHost();
                 Assert.AreEqual(1, changes);
-                Object.DestroyImmediate(h.gameObject);
-                _objects.Remove(h.gameObject);
+                GameObject go = h.gameObject;
+                Object.DestroyImmediate(go);
+                _objects.Remove(go);
                 Assert.AreEqual(2, changes);
             }
             finally

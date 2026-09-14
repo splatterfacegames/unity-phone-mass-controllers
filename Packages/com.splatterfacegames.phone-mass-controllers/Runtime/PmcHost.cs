@@ -455,9 +455,11 @@ namespace Splatter.Pmc
         /// <summary>Environment-independent overload, for tests and the editor preprocessor.</summary>
         public static string ResolveControllerDir(string dir, string streamingAssetsPath, bool runningInEditor)
         {
-            if (string.IsNullOrEmpty(dir))
+            if (dir == null)
                 return "";
             dir = dir.Trim().Replace('\\', '/');
+            if (dir.Length == 0)
+                return "";
             if (Path.IsPathRooted(dir) || dir.Contains("://"))
                 return dir;
             if (dir == "StreamingAssets")
