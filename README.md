@@ -6,8 +6,8 @@ page served **by the game itself**, and they connect over WebSocket. No app inst
 no external server.
 
 Unity port of [godot-phone-mass-controllers](https://github.com/splatterfacegames/godot-phone-mass-controllers)
-— same wire protocol, same browser SDK. Docs site: **https://pmc-unity.jethachan.net**
-(Godot version: https://pmc.jethachan.net).
+— same wire protocol, same browser SDK. Docs site: **https://pmc-unity.splatterfacegames.com**
+(Godot version: https://pmc.splatterfacegames.com).
 
 ## Features
 

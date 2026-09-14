@@ -6,9 +6,9 @@ The project website for unity-phone-mass-controllers — a static, dependency-fr
 
 Deployed automatically by [.github/workflows/pages.yml](../.github/workflows/pages.yml) to
 GitHub Pages on every push to `main` that touches `site/`. Served at the custom domain
-**pmc-unity.jethachan.net** (see `CNAME`; DNS via Cloudflare → GitHub Pages).
+**pmc-unity.splatterfacegames.com** (see `CNAME`; DNS via Cloudflare → GitHub Pages).
 
-Sibling site: **pmc.jethachan.net** (the Godot port) — same wire protocol, independent codebase.
+Sibling site: **pmc.splatterfacegames.com** (the Godot port) — same wire protocol, independent codebase.
 
 - `index.html` — the page
 - `style.css` — the only stylesheet

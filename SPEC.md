@@ -257,7 +257,7 @@ tests/dotnet/                  NUnit suite compiling Runtime/Core/** directly (C
 tests/node/                    ws-interop + QR-decode corpus (reused from the Godot repo)
 Tests~ or Tests/               Unity Test Framework edit/play-mode suites for glue code
 tools/                         make_unitypackage.py + helpers
-site/                          GitHub Pages site (pmc-unity.jethachan.net)
+site/                          GitHub Pages site (pmc-unity.splatterfacegames.com)
 .github/workflows/             ci.yml, pages.yml, release.yml
 README.md  LICENSE  CHANGELOG.md  SPEC.md  docs/
 ```
