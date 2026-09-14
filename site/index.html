@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0c0e1e">
+<title>Phone Mass Controllers — phone-browser controllers for Unity</title>
+<meta name="description" content="Turn a Unity game into the host for a room full of phone controllers. Players scan a QR code; their browser becomes the controller. Pure C#, no app install, no relay server.">
+<meta property="og:title" content="Phone Mass Controllers — for Unity">
+<meta property="og:description" content="Jackbox-style phone controllers for Unity. Scan a QR, your phone's browser is the controller — served by the game itself.">
+<meta property="og:image" content="https://pmc-unity.jethachan.net/assets/og-card.png">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pmc-unity.jethachan.net/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230c0e1e'/%3E%3Crect x='9' y='5' width='14' height='22' rx='3' fill='none' stroke='%237f8fff' stroke-width='2.4'/%3E%3Ccircle cx='16' cy='23' r='1.6' fill='%237f8fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-row">
+    <a class="brand" href="#top">Phone&nbsp;Mass&nbsp;Controllers <span class="brand-tag">for Unity</span></a>
+    <nav class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#install">Install</a>
+      <a href="#quickstart">Quickstart</a>
+      <a href="#caveats">Caveats</a>
+      <a href="https://pmc.jethachan.net">Godot version ↗</a>
+      <a class="gh" href="https://github.com/splatterfacegames/unity-phone-mass-controllers">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ============================ HERO ============================ -->
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">A pure-C# package for Unity</p>
+      <h1>Turn a Unity game into the host for a room full of phone&nbsp;controllers.</h1>
+      <p class="lede">
+        Players scan a QR code on the big screen; their phone's browser loads a controller page
+        <em>served by the game itself</em>. No app install, no Node, no relay server, no native binaries.
+        Jackbox-style, with the game as the authority.
+      </p>
+      <div class="hero-ctas">
+        <a class="btn primary" href="https://github.com/splatterfacegames/unity-phone-mass-controllers">View on GitHub</a>
+        <a class="btn" href="#install">Install</a>
+        <a class="btn" href="#quickstart">Quickstart</a>
+      </div>
+      <ul class="badges">
+        <li>Unity 2021.3+ (developed on Unity 6)</li>
+        <li>Pure C#</li>
+        <li>MIT</li>
+      </ul>
+      <p class="sibling-note">
+        The Unity sibling of <a href="https://pmc.jethachan.net">Phone Mass Controllers for Godot</a> —
+        two independent implementations of the same wire protocol, not a wrapper or a shared codebase.
+        <a href="#engines">Which engine?</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- ========================= LOBBY SIM ========================= -->
+  <section class="sim-section">
+    <div class="wrap">
+      <h2 class="visually-hidden">What joining looks like</h2>
+      <div class="sim" id="sim">
+        <div class="sim-body">
+          <div class="sim-tv">
+            <div class="sim-tv-head">
+              <strong>LOBBY</strong>
+              <span class="sim-url">192.168.1.87:8080</span>
+            </div>
+            <div class="sim-tv-body">
+              <img class="sim-qr" src="assets/repo-qr.png" alt="QR code linking to the GitHub repository" width="132" height="132">
+              <div class="sim-roster-wrap">
+                <p class="sim-status" id="sim-status">Waiting for players…</p>
+                <div class="sim-roster" id="sim-roster"></div>
+              </div>
+            </div>
+          </div>
+          <div class="sim-phone" aria-hidden="true">
+            <div class="sim-phone-screen">
+              <span class="sim-phone-notch"></span>
+              <p class="sim-phone-game">Buzzer Party</p>
+              <p class="sim-phone-name" id="sim-phone-name">—</p>
+              <button class="sim-buzz" id="sim-buzz" type="button" tabindex="-1">BUZZ</button>
+              <p class="sim-phone-stat" id="sim-phone-stat">connecting…</p>
+            </div>
+          </div>
+        </div>
+        <p class="sim-note">
+          A room filling up, simulated — joins, a buzz on the phone, a dropout that keeps its seat.
+          The QR is real: it points at this repository if you want to scan it.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================= HOW IT WORKS ========================= -->
+  <section id="how" class="section">
+    <div class="wrap">
+      <h2>How it works</h2>
+      <div class="steps">
+        <div class="step">
+          <span class="step-n">1</span>
+          <h3>Add the component</h3>
+          <p>Install the UPM package, then <em>Add Component → Splatter → Phone Mass Controllers</em>
+          on a GameObject and point <code>ControllerDir</code> at a folder of plain HTML/JS —
+          your controller page.</p>
+        </div>
+        <div class="step">
+          <span class="step-n">2</span>
+          <h3>Show the QR on screen</h3>
+          <p><code>host.QrTexture()</code> renders a join QR in pure C#. Put it on a
+          <code>RawImage</code> next to <code>host.Host.JoinUrl()</code> for the rare manual typist.
+          Works in Play mode <em>and</em> edit mode.</p>
+        </div>
+        <div class="step">
+          <span class="step-n">3</span>
+          <h3>Phones join via browser</h3>
+          <p>The camera app scans the code, the game serves the page, and a WebSocket opens on the same
+          port. From then on they're <em>players</em> — named, rejoinable, kickable — not raw sockets.</p>
+        </div>
+      </div>
+      <div class="pipe">
+        <div class="pipe-node">
+          <strong>Phone camera</strong>
+          <span>scans the QR</span>
+        </div>
+        <div class="pipe-arrow"><i>→</i><em>opens the join URL</em></div>
+        <div class="pipe-node">
+          <strong>Phone browser</strong>
+          <span>your index.html + <code>/pmc/pmc.js</code></span>
+        </div>
+        <div class="pipe-arrow"><i>⇄</i><em>GET the page, then WebSocket — one port</em></div>
+        <div class="pipe-node">
+          <strong>Unity host</strong>
+          <span><code>PmcHost</code> · port 8080</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================= FEATURES ========================= -->
+  <section id="features" class="section alt">
+    <div class="wrap">
+      <h2>What's in the box</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>One port, HTTP + WebSocket</h3>
+          <p>Its own RFC 6455 server on raw sockets — masking, fragmentation, ping/pong, binary
+          frames — with a dedicated I/O thread and a per-<code>Poll()</code> drain budget, so a slow
+          phone can't stall the game. The same port serves your page, the SDK, the QR PNG and the
+          socket, so a single tunnel hostname works. No dependencies.</p>
+        </div>
+        <div class="card">
+          <h3>Players, not sockets</h3>
+          <p>Random 128-bit rejoin tokens, a grace period for drops, and tombstones that restore a
+          returning player's id and <code>Meta</code>. Join codes, max players, kick/ban,
+          "replaced by another tab" detection, and PIN-gated admin — the lobby bookkeeping a party
+          game actually needs.</p>
+        </div>
+        <div class="card">
+          <h3>Private by default</h3>
+          <p><code>host.Send(player, data)</code> targets one phone; <code>host.Broadcast(data, filter)</code>
+          reaches the rest. JSON via <code>JToken</code> for convenience, or raw <code>byte[]</code>
+          frames passed through untouched — FlatBuffers-friendly for big payloads.</p>
+        </div>
+        <div class="card">
+          <h3>QR encoder built in</h3>
+          <p><code>PmcQr</code> is a pure-C# QR generator covering all 40 versions and every
+          error-correction level, checked against ZXing, jsQR and the <code>qrcode</code> npm package.
+          <code>EncodePng()</code> writes a PNG with zero engine dependencies;
+          <code>PmcHost.QrTexture()</code> hands you a <code>Texture2D</code>.</p>
+        </div>
+        <div class="card">
+          <h3>One click beyond the LAN</h3>
+          <p><code>host.StartTunnel()</code> fetches a checksum- and signature-verified
+          <code>cloudflared</code>, opens a Cloudflare Quick Tunnel (no account), waits for DNS, then
+          swaps the QR to an <code>https://…trycloudflare.com</code> URL and turns on a join code.
+          Named tunnels supported for a stable hostname.</p>
+        </div>
+        <div class="card">
+          <h3><code>pmc.js</code> controller SDK</h3>
+          <p>The same zero-dependency ES module the Godot port serves, at <code>/pmc/pmc.js</code>.
+          Reconnect with jittered backoff, clock sync for fair timing, <code>vibrate()</code> and
+          screen-wake-lock helpers, and a saved token so a refresh keeps your seat. No build step.</p>
+        </div>
+        <div class="card">
+          <h3>Lobby helpers</h3>
+          <p><code>PmcQueue</code>, <code>PmcVote</code> (majority, vetoes, timeout) and
+          <code>PmcRotation</code> (winner-stays / loser-stays / strict) — pure-logic pieces lifted
+          out of a real party game, covered by the same NUnit suite as the core.</p>
+        </div>
+        <div class="card">
+          <h3>Unity-native, CI-friendly</h3>
+          <p>A dockable <em>Window → Phone Controllers</em> panel shows live host status, players and
+          a throwaway test tunnel — in Play mode and edit mode. Builds copy your controller files into
+          <code>StreamingAssets</code> automatically. The engine-free core runs plain
+          <code>dotnet test</code> — no Unity license needed in CI.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================= INSTALL ========================= -->
+  <section id="install" class="section">
+    <div class="wrap">
+      <h2>Install</h2>
+      <p class="section-lede">
+        Two ways in — pick one, then <em>Add Component → Splatter → Phone Mass Controllers</em>
+        on any GameObject.
+      </p>
+      <div class="install-cols">
+        <figure class="code-card install-card">
+          <figcaption>Option A — UPM git URL (recommended)</figcaption>
+          <p class="install-step">Window → Package Manager → <strong>+</strong> → <em>Add package from git URL…</em></p>
+          <pre><code>https://github.com/splatterfacegames/unity-phone-mass-controllers.git?path=/Packages/com.splatterfacegames.phone-mass-controllers</code></pre>
+        </figure>
+        <figure class="code-card install-card">
+          <figcaption>Option B — .unitypackage</figcaption>
+          <p class="install-step">Download <code>phone-mass-controllers.unitypackage</code> from
+          <a href="https://github.com/splatterfacegames/unity-phone-mass-controllers/releases">Releases</a>,
+          then Assets → Import Package → Custom Package.</p>
+          <pre><code>Assets → Import Package → Custom Package…
+→ phone-mass-controllers.unitypackage</code></pre>
+        </figure>
+      </div>
+      <ul class="reqs">
+        <li>Unity <strong>2021.3+</strong> (developed and tested on Unity 6 / 6000.3.24f1)</li>
+        <li><code>com.unity.nuget.newtonsoft-json</code> — pulled in automatically as a UPM dependency</li>
+        <li>The tunnel feature spawns <code>cloudflared</code> — desktop platforms only (Windows/macOS/Linux)</li>
+        <li>Want a head start? Import <strong>Samples → Buzzer Party</strong> in Package Manager for a
+        playable lobby + buzzer demo</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ========================= QUICKSTART ========================= -->
+  <section id="quickstart" class="section alt">
+    <div class="wrap">
+      <h2>Quickstart</h2>
+      <p class="section-lede">
+        With the package installed and a <code>PmcHost</code> on a GameObject, this is the whole
+        game side:
+      </p>
+      <div class="code-cols">
+        <figure class="code-card">
+          <figcaption>Party.cs — the host</figcaption>
+          <pre><code class="lang-csharp">using Newtonsoft.Json.Linq;
+using Splatter.Pmc;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class Party : MonoBehaviour {
+    [SerializeField] PmcHost host;      // Add Component → Splatter → Phone Mass Controllers
+    [SerializeField] RawImage qrImage;  // on your lobby canvas
+
+    void Awake() {
+        host.ControllerDir = Application.streamingAssetsPath + "/pmc/controller";
+        host.Host.MessageReceived += OnMessage;
+        host.Host.Start();
+        qrImage.texture = host.QrTexture();   // join QR on the big screen
+    }
+
+    void OnMessage(PmcPlayer p, JToken data) {
+        if (data["type"]?.ToString() != "buzz") return;
+        int score = (p.Meta["score"]?.Value&lt;int&gt;() ?? 0) + 1;
+        p.Meta["score"] = score;
+        host.Host.Send(p, new JObject { ["type"] = "you_scored", ["score"] = score });
+        host.Host.Broadcast(new JObject { ["type"] = "scores" });
+    }
+}</code></pre>
+        </figure>
+        <figure class="code-card">
+          <figcaption>controller/index.html — the phone</figcaption>
+          <pre><code class="lang-html">&lt;button id="buzz"&gt;BUZZ&lt;/button&gt;
+&lt;script type="module"&gt;
+  import { connect, vibrate } from '/pmc/pmc.js';
+
+  const pmc = connect({ name: prompt('Your name?') });
+  pmc.on('message', (d) =&gt; console.log(d));
+
+  buzz.onpointerdown = () =&gt; {
+    pmc.send({ type: 'buzz' });
+    vibrate(20);
+  };
+&lt;/script&gt;</code></pre>
+        </figure>
+      </div>
+      <p class="code-after">
+        In the editor the host serves your <code>ControllerDir</code> folder directly; in a build, a
+        preprocessor copies it (plus the <code>pmc.js</code> SDK) into
+        <code>StreamingAssets/pmc/</code> — which is why the path above uses
+        <code>Application.streamingAssetsPath</code>. Players outside your LAN? One more call —
+        <code>host.Host.StartTunnel()</code> — and the QR swaps itself to a public https URL with a
+        join code. The <a href="https://github.com/splatterfacegames/unity-phone-mass-controllers#readme">README</a>
+        covers settings, the tunnel and the full API;
+        <a href="https://github.com/splatterfacegames/unity-phone-mass-controllers/blob/main/SPEC.md">SPEC.md</a>
+        is the wire protocol.
+      </p>
+    </div>
+  </section>
+
+  <!-- ========================= WHICH ENGINE ========================= -->
+  <section id="engines" class="section">
+    <div class="wrap">
+      <h2>Which engine?</h2>
+      <p class="section-lede">
+        Two ports, one protocol. A Godot host and a Unity host are interchangeable to a phone:
+        the same <code>pmc.*</code> messages, the same <code>pmc.js</code>, the same HTTP routes.
+        They're <strong>independent implementations</strong> — not a shared codebase, not a wrapper;
+        each one is idiomatic to its engine. Pick whichever engine your game is already in.
+      </p>
+      <div class="versus">
+        <table>
+          <thead>
+            <tr><th></th><th>Unity <span class="th-tag">this site</span></th><th>Godot</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Repository</td>
+              <td><a href="https://github.com/splatterfacegames/unity-phone-mass-controllers">splatterfacegames/unity-phone-mass-controllers</a></td>
+              <td><a href="https://github.com/splatterfacegames/godot-phone-mass-controllers">splatterfacegames/godot-phone-mass-controllers</a></td>
+            </tr>
+            <tr>
+              <td>Docs site</td>
+              <td><a href="https://pmc-unity.jethachan.net">pmc-unity.jethachan.net</a></td>
+              <td><a href="https://pmc.jethachan.net">pmc.jethachan.net</a></td>
+            </tr>
+            <tr><td>Written in</td><td>Pure C# (engine-free core)</td><td>Pure GDScript</td></tr>
+            <tr><td>Install</td><td>UPM git URL or .unitypackage</td><td><code>addons/</code> folder, enable plugin</td></tr>
+            <tr><td>Requires</td><td>Unity 2021.3+</td><td>Godot 4.3+</td></tr>
+            <tr><td>Wire protocol</td><td colspan="2">Identical — <code>pmc.*</code> messages, <code>pmc.js</code>, same HTTP routes. A phone can't tell which engine is hosting.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================= CAVEATS ========================= -->
+  <section id="caveats" class="section alt">
+    <div class="wrap">
+      <h2>Honest caveats</h2>
+      <p class="section-lede">This is a party-room host, not a service. It earns its keep on a couch, not at scale.</p>
+      <ul class="caveats">
+        <li>
+          <strong>Quick-tunnel URLs are ephemeral.</strong> Every <code>StartTunnel()</code> gets a new
+          <code>*.trycloudflare.com</code> address, free and account-less but strictly best-effort — no
+          uptime guarantee. Great for a game night; not a hosted endpoint. For a stable
+          <code>https://party.example.com</code>, use a named tunnel
+          (<code>TunnelMode = "named"</code> + a Cloudflare token); Tailscale Funnel, ngrok and relay
+          options are compared in
+          <a href="https://github.com/splatterfacegames/unity-phone-mass-controllers/blob/main/docs/tunnels.md">docs/tunnels.md</a>.
+        </li>
+        <li>
+          <strong>Tunnels are desktop-only.</strong> <code>StartTunnel()</code> spawns a
+          <code>cloudflared</code> child process, so it works in the editor and in Windows/macOS/Linux
+          desktop builds — not on mobile or console players, which can still host over the LAN.
+        </li>
+        <li>
+          <strong>Plain LAN http isn't a secure context.</strong> Screen wake lock and a few other web
+          APIs need https, so on <code>http://192.168.x.x</code> a phone can still doze off mid-game.
+          The tunnel URL is https and gets wake lock back.
+        </li>
+        <li>
+          <strong>iOS can't vibrate.</strong> Safari on iPhone has no <code>navigator.vibrate</code>;
+          <code>vibrate()</code> feature-detects and quietly returns <code>false</code> there.
+        </li>
+        <li>
+          <strong>Backgrounded phones go quiet.</strong> Mobile browsers suspend WebSockets in
+          background tabs and on lock screens. The SDK reconnects when the page returns, and
+          <code>GraceSeconds</code> keeps the player's seat (and score) warm meanwhile.
+        </li>
+        <li>
+          <strong>Your Wi-Fi has to allow it.</strong> LAN play needs a network without client
+          isolation — many "guest" and campus APs block device-to-device traffic, which is exactly
+          what this is.
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ========================= FOOTER ========================= -->
+  <footer class="footer">
+    <div class="wrap">
+      <div class="foot-qr">
+        <img src="assets/repo-qr.png" alt="QR code for the GitHub repository" width="120" height="120">
+        <p>Scan for the repo.</p>
+      </div>
+      <div class="foot-links">
+        <p>
+          <strong>Phone Mass Controllers for Unity</strong> is MIT-licensed, by
+          <a href="https://github.com/splatterfacegames">splatterfacegames</a>. Inspired by
+          <a href="https://github.com/greggman/HappyFunTimes">HappyFunTimes</a>. A sibling port of the
+          <a href="https://github.com/splatterfacegames/godot-phone-mass-controllers">Godot addon</a>
+          — same wire protocol, separate codebase.
+        </p>
+        <p class="foot-nav">
+          <a href="https://github.com/splatterfacegames/unity-phone-mass-controllers">Repository</a> ·
+          <a href="https://github.com/splatterfacegames/unity-phone-mass-controllers/blob/main/SPEC.md">Protocol spec</a> ·
+          <a href="https://github.com/splatterfacegames/unity-phone-mass-controllers/issues">Issues</a> ·
+          <a href="https://github.com/splatterfacegames/unity-phone-mass-controllers/blob/main/LICENSE">MIT license</a> ·
+          <a href="https://pmc.jethachan.net">Godot version</a>
+        </p>
+      </div>
+    </div>
+  </footer>
+
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
