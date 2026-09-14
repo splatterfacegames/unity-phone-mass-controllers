@@ -1,13 +1,14 @@
-// Verifies the pure-GDScript PMCQr encoder against independent implementations.
+// Verifies the pure-C# PmcQr encoder against independent implementations.
 //
-// 1. Runs Godot headless to dump a corpus of matrices (tests/node/qr-dump.gd).
+// 1. Runs the tests/qr-dump console to dump a corpus of matrices (same corpus as the
+//    Godot tests/node/qr-dump.gd it was ported from).
 // 2. Decodes every matrix with jsQR and checks the payload bytes match the input exactly.
 // 3. Rebuilds every symbol with the `qrcode` npm package forcing the same version, EC level,
 //    mode and mask, and compares module-for-module.
 // 4. Decodes every matrix with ZXing (@zxing/library) as a second independent decoder.
-// 5. Decodes the PNGs written by PMCQr.to_image with jsQR.
+// 5. Decodes the PNGs written by PmcQr.EncodePng with jsQR.
 //
-// Usage: node tests/node/qr-decode.mjs [--no-dump]   (GODOT env = Godot executable, default "godot")
+// Usage: node tests/node/qr-decode.mjs [--no-dump]
 import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
 import { readFileSync, mkdirSync } from 'node:fs';
@@ -25,8 +26,7 @@ const ZX = require('@zxing/library');
 
 if (!process.argv.includes('--no-dump')) {
   mkdirSync(outDir, { recursive: true });
-  const godot = process.env.GODOT || 'godot';
-  const r = spawnSync(godot, ['--headless', '--path', repo, '--script', 'res://tests/node/qr-dump.gd', '--', outDir], { encoding: 'utf8', timeout: 600000 });
+  const r = spawnSync('dotnet', ['run', '-c', 'Release', '--project', join(repo, 'tests', 'qr-dump'), '--', outDir], { encoding: 'utf8', timeout: 600000 });
   process.stdout.write((r.stdout || '').split('\n').filter((l) => l.startsWith('qr-dump')).join('\n') + '\n');
   if (r.status !== 0) {
     console.error(r.stdout, r.stderr);
@@ -130,6 +130,6 @@ console.log(`qr-decode: ${entries.length} matrices; ZXing exact ${stats.zxing}/$
   `qrcode module-identical ${stats.qrcode}/${entries.length - stats.qrcodeSkipped} (${stats.qrcodeSkipped} skipped: empty text); ` +
   `PNG decoded ${stats.png}/${entries.filter((x) => x.png).length}; versions ${Math.min(...stats.versions)}-${Math.max(...stats.versions)} (${stats.versions.size} distinct); ` +
   `levels ${[...stats.levels].join('')}; modes ${[...stats.modes].join(',')}`);
-console.log(`qr-decode: typical URL encode ${corpus.typical_url_ms.toFixed(2)} ms, tunnel URL ${corpus.tunnel_url_ms.toFixed(2)} ms (Godot headless)`);
+console.log(`qr-decode: typical URL encode ${corpus.typical_url_ms.toFixed(2)} ms, tunnel URL ${corpus.tunnel_url_ms.toFixed(2)} ms (dotnet qr-dump)`);
 if (failures) { console.error(`qr-decode: ${failures} failure(s)`); process.exit(1); }
 console.log('qr-decode: OK');
