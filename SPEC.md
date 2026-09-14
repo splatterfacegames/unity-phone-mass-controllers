@@ -179,48 +179,53 @@ pmc.rttMs;                            // rolling avg round-trip ms
 
 ## 5. Outside-LAN join: Cloudflare tunnels (quick + named)
 
-`PMCTunnel` (used by `PMCHost.start_tunnel()` / `restart_tunnel()` and the editor dock):
+`PmcTunnel` (used by `PmcHostCore.StartTunnel()` / `RestartTunnel()` and the editor dock). Desktop only —
+child processes can't spawn on Android/iOS/WebGL/consoles, where `Start` reports `failed` (see
+docs/relay-scope.md for the relay answer).
 
-1. Resolve `cloudflared`: export var path → env `PMC_CLOUDFLARED` → `PATH` → `user://pmc/bin/cloudflared[.exe]`.
+1. Resolve `cloudflared`: `BinaryPath` → env `PMC_CLOUDFLARED` → `PATH` → `<TempDir>/bin/cloudflared[.exe]`
+   (`TempDir` defaults to `<system temp>/pmc`).
 2. If missing, download the official release asset for the OS/arch from
    `https://github.com/cloudflare/cloudflared/releases/latest/download/…` (windows-amd64.exe, linux-amd64,
    linux-arm64, darwin `.tgz`, extracted via `tar`). The binary must then pass: SHA-256 vs the release's GitHub
-   API digest, `cloudflared --version` ≥ `minimum_version` (default 2022.6.2), and an OS code-signature check
+   API digest, `cloudflared --version` ≥ `MinimumVersion` (default 2022.6.2), and an OS code-signature check
    where supported (Windows Authenticode — must be Valid and signed by Cloudflare, Inc. when a signature is
    present; macOS `codesign --verify`, with `spctl` for notarization; unsigned binaries fall back to the digest
    check — Linux users should prefer their distro's signed Cloudflare package). A managed binary older than
-   `binary_max_age_days` (default 30) is re-verified against the latest release and refreshed when it drifted.
-   Download requires `allow_download=true` (default: editor on, runtime off unless the game opts in).
+   `BinaryMaxAgeDays` (default 30) is re-verified against the latest release and refreshed when it drifted.
+   Download requires `AllowDownload=true` (default: editor on, runtime off unless the game opts in).
 3. **Quick mode** runs `cloudflared tunnel --no-autoupdate --config <isolated> --url http://127.0.0.1:<port>`
-   via `OS.execute_with_pipe`. The always-isolated `--config` keeps a default `~/.cloudflared/config.yml`
-   (left over from named-tunnel setups) from breaking the quick tunnel. stderr is read for
-   `https://<random>.trycloudflare.com` and "Registered tunnel connection"; with `verify_dns` the hostname must
-   also resolve over DNS-over-HTTPS before `ready`.
-   **Named mode** runs `cloudflared tunnel --no-autoupdate run --token <named_token>`, or — with
-   `named_tunnel` + `named_credentials_file` — a generated `named-tunnel.yml` (ingress hostname →
-   `http://127.0.0.1:<port>`) and `run <named_tunnel>`. No trycloudflare URL is printed; the URL is
-   `https://<named_hostname>`.
-4. States: `downloading` → `starting` → `ready` → `lost` (every edge connection unregistered for
-   `lost_grace_sec`, or the process exits post-ready; an alive process can return to `ready` on
+   as a `System.Diagnostics.Process` child. The always-isolated `--config` keeps a default
+   `~/.cloudflared/config.yml` (left over from named-tunnel setups) from breaking the quick tunnel. stderr is
+   read for `https://<random>.trycloudflare.com` and "Registered tunnel connection"; with `VerifyDns` the
+   hostname must also resolve over DNS-over-HTTPS before `ready`.
+   **Named mode** runs `cloudflared tunnel --no-autoupdate run --token <NamedToken>`, or — with
+   `NamedName` + `NamedCredentialsFile` — a generated `named-tunnel.yml` (ingress hostname →
+   `http://127.0.0.1:<port>`) and `run <NamedName>`. No trycloudflare URL is printed; the URL is
+   `https://<NamedHostname>`.
+4. States: `idle` → `downloading` → `starting` → `ready` → `lost` (every edge connection unregistered for
+   `LostGraceSec`, or the process exits post-ready; an alive process can return to `ready` on
    re-registration) → `stopped` / `failed`. Creation failures (HTTP 429 / error 1015) retry with exponential
-   backoff (`max_retries` default 2, `retry_backoff_sec` default 4 s). When QUIC (UDP 7844) looks blocked —
-   its signature errors in the log, or registration stalling past `protocol_fallback_sec` after the URL was
-   issued — cloudflared relaunches once with `--protocol http2` (skipped when `extra_args` already sets a
+   backoff (`MaxRetries` default 2, `RetryBackoffSec` default 4 s). When QUIC (UDP 7844) looks blocked —
+   its signature errors in the log, or registration stalling past `ProtocolFallbackSec` after the URL was
+   issued — cloudflared relaunches once with `--protocol http2` (skipped when `ExtraArgs` already sets a
    protocol). Common error lines map to actionable hints ("rate-limited", "UDP blocked", "DNS filter").
-5. On `ready`: `advertise_url` = tunnel URL, `join_url_changed`, QR regenerates. `join_code` empty →
+   All state changes happen inside `Pump()` (or the `Start`/`Stop` call on the host's Poll thread);
+   `StateChanged` is always observed on the thread calling `Pump()`.
+5. On `ready`: `AdvertiseUrl` = tunnel URL, `JoinUrlChanged`, QR regenerates. `JoinCode` empty →
    **auto-generate a 6-letter code** (24^6 ≈ 191M — the host is now on the public internet); the QR and
-   `join_url()` carry it as `?code=`, and `/pmc/info.json` + `/pmc/qr.png` (which reveal the URL) answer only to
-   loopback or a valid `?code=`. `start_tunnel(code)` or `tunnel_join_code` supplies a code that is used as-is
+   `JoinUrl()` carry it as `?code=`, and `/pmc/info.json` + `/pmc/qr.png` (which reveal the URL) answer only to
+   loopback or a valid `?code=`. `StartTunnel(code)` or `TunnelJoinCode` supplies a code that is used as-is
    and never auto-cleared. The QR/join URL is only ever shown post-`ready` — a phone that resolves a
    brand-new hostname too early can sit on a cached NXDOMAIN for ~90 s (fix: airplane-mode toggle or wait).
-6. Lifecycle: `stop_tunnel()` and freeing the host kill the child process; the pid is recorded in
-   `user://pmc/cloudflared.pid` and a leftover from a crashed engine is reaped on the next `start()` — only
-   when the pid's command line still looks like cloudflared, so a recycled pid is never killed. A `ready`
-   tunnel survives `stop()`→`start()` on the same port (retargeted when the port changed) and a host
-   teardown detaches it to the scene root, where the next `start_tunnel()` re-adopts it within ~2 minutes.
-7. `restart_tunnel()` performs a rolling restart: the replacement tunnel reaches `ready` first, all joined
+6. Lifecycle: `StopTunnel()`, disposing the host core, or tearing down `PmcHost` kill the child process;
+   the pid is recorded in `<TempDir>/cloudflared.pid` and a leftover from a crashed process is reaped on the
+   next `Start()` — only when the pid's command line still looks like cloudflared, so a recycled pid is never
+   killed. A `ready` tunnel survives `Stop()`→`Start()` on the same port (retargeted when the port changed);
+   if the host is torn down without `Stop()`, the pidfile lets the next `Start()` reap the orphan safely.
+7. `RestartTunnel()` performs a rolling restart: the replacement tunnel reaches `ready` first, all joined
    players get `{"t":"pmc.moved","d":{"url":<new join url>}}`, then the old tunnel stops. A `lost` tunnel is
-   auto-restarted by the host (`tunnel_auto_restart`, `tunnel_restart_delay_sec`, bounded per `start_tunnel`).
+   auto-restarted by the host (`TunnelAutoRestart`, `TunnelRestartDelaySec`, bounded per `StartTunnel`).
 
 Quick Tunnels need no Cloudflare account, but URLs are ephemeral, best-effort, rate-limited (HTTP 429,
 ~200 concurrent in-flight requests, no SSE) and come with no uptime guarantee — use a named tunnel (or
