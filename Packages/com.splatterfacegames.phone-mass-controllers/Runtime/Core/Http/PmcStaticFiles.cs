@@ -321,7 +321,11 @@ namespace Splatter.Pmc {
         internal static PmcHttpResponse FileResponse(string path, PmcHttpRequest req = null) {
             long size;
             try {
-                size = new FileInfo(path).Length;
+                // Measure through an open stream — FileInfo.Length can report the link's own
+                // size (0) for a symlink instead of the target's.
+                using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read)) {
+                    size = fs.Length;
+                }
             } catch (Exception) {
                 return null;
             }

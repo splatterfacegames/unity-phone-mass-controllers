@@ -1014,9 +1014,11 @@ namespace Splatter.Pmc {
                         break;
                     case PmcIoEvent.KindHttp:
                         HandleHttpRequest(e.Conn, e.Request, now);
+                        e.Conn.HttpBusy = false; // response is queued — worker may extract the next request
                         break;
                     case PmcIoEvent.KindHttpError:
                         Respond(e.Conn, null, PmcHttpResponse.Error(e.Status, e.Reason), false);
+                        e.Conn.HttpBusy = false;
                         break;
                     case PmcIoEvent.KindWs:
                         OnWsEvent(e.Conn, e.Ev, now);

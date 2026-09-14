@@ -239,6 +239,9 @@ internal sealed class TestWs : IDisposable {
         return d;
     }
 
+    /// <summary>The last pmc.welcome this client received (set by Hello()).</summary>
+    public JObject LastWelcome;
+
     /// <summary>Completes pmc.hello and returns the pmc.welcome JSON.</summary>
     public JObject Hello(object extra = null) {
         var hello = new JObject { ["t"] = "pmc.hello", ["sdk"] = 1 };
@@ -250,6 +253,7 @@ internal sealed class TestWs : IDisposable {
         Assert.That(f.Op, Is.EqualTo(1), "expected text frame");
         var m = JObject.Parse(Encoding.UTF8.GetString(f.Payload));
         Assert.That((string)m["t"], Is.EqualTo("pmc.welcome"), "expected pmc.welcome, got " + m);
+        LastWelcome = m;
         return m;
     }
 
@@ -274,6 +278,24 @@ internal sealed class TestWs : IDisposable {
             return f.Payload.Length >= 2 ? (f.Payload[0] << 8) | f.Payload[1] : 1005;
         }
         throw new TimeoutException("no close frame");
+    }
+
+    /// <summary>Non-blocking check: true once the peer has closed the TCP connection. Drains any
+    /// pending bytes into the frame buffer first so a FIN sitting behind them is detected.</summary>
+    public bool IsTcpClosed() {
+        try {
+            if (!Sock.Poll(0, SelectMode.SelectRead)) return false;
+            if (Sock.Available == 0) return true;
+            var b = new byte[65536];
+            int n = Sock.Receive(b);
+            if (n <= 0) return true;
+            var nb = new byte[n];
+            Buffer.BlockCopy(b, 0, nb, 0, n);
+            AppendBuf(nb);
+            return false;
+        } catch (Exception) {
+            return true;
+        }
     }
 
     /// <summary>Waits until the TCP socket is closed by the peer.</summary>

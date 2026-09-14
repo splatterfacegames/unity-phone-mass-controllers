@@ -89,6 +89,11 @@ namespace Splatter.Pmc {
         /// <summary>Worker-maintained snapshot of "input partially received" for the host's HTTP
         /// header timeout.</summary>
         internal volatile bool IoPartialIn;
+        /// <summary>A complete request was emitted to the host and its response has not been queued
+        /// yet. The worker must not extract another request while this is set — responses are
+        /// generated on the host thread, so without it a pipelined request's head could overtake a
+        /// streamed file body (the main-thread loop's is_streaming() check can't see it).</summary>
+        internal volatile bool HttpBusy;
         private int _upMaxMessageBytes;
         private long _upNowMsec;
         private int _upHelloTimeoutMsec;
@@ -206,6 +211,9 @@ namespace Splatter.Pmc {
         /// <paramref name="file"/> after the queued bytes.</summary>
         internal void StartFile(Stream file, long length) {
             lock (IoMutex) {
+                if (_file != null) {
+                    _file.Dispose(); // unreachable while HttpBusy is honoured; avoids a leak
+                }
                 _file = file;
                 _fileRemaining = length;
                 _lastTxMsec = PmcTime.NowMsec();

@@ -162,11 +162,15 @@ namespace Splatter.Pmc {
                 }
                 int handled = 0;
                 while (c.Mode == PmcConnection.ConnMode.Http && !c.CloseAfterFlush && !c.UpgradePending
-                        && !c.IsStreaming() && c.OutPending() < WriteCap && handled < HttpReqCap) {
+                        && !c.IsStreaming() && !c.HttpBusy
+                        && c.OutPending() < WriteCap && handled < HttpReqCap) {
                     var r = c.NextHttpRequest(MaxHeaderBytes, MaxBodyBytes);
                     if (r == HttpNextResult.Incomplete) break;
                     handled += 1;
                     did = true;
+                    // The host generates the response — one unhandled request per connection at a
+                    // time, like the main-thread loop's is_streaming() serialization.
+                    c.HttpBusy = true;
                     if (r.IsError) {
                         _pending.Add(PmcIoEvent.HttpError(c, r.ErrorStatus, r.ErrorReason));
                         break;

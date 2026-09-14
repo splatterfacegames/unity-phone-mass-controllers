@@ -40,6 +40,13 @@ namespace Splatter.Pmc {
         public void Pump() {
         }
 
+        // Seam internals probed by PmcTunnelSeam (the real implementation provides equivalents):
+        // the local port the tunnel forwards to, whether the child process is alive even while the
+        // registration dropped ("lost"), and whether the process must outlive its host object.
+        internal int LocalPort { get; set; } = -1;
+        internal bool IsProcessAlive { get; set; }
+        internal bool Detached { get; set; }
+
         // options — set before Start; mirrored from host exports
         public string Mode = "quick";
         public string NamedToken = "";
