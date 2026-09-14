@@ -245,7 +245,7 @@ internal sealed class HostSessionTests {
         var p = Host.GetPlayer(id);
         Assert.That(p, Is.Not.Null);
         Assert.That(p.Connected, Is.False);
-        Assert.That(p.GraceDeadlineMs, Is.GreaterThan(Environment.TickCount64), "player kept during grace");
+        Assert.That(p.GraceDeadlineMs, Is.GreaterThan(PmcTime.NowMsec()), "player kept during grace");
         Assert.That(Host.Players(false).FindIndex(x => x.Id == id), Is.EqualTo(-1),
             "players(false) excludes disconnected");
         Assert.That(Host.Players(true).FindIndex(x => x.Id == id), Is.GreaterThanOrEqualTo(0),
