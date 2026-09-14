@@ -21,6 +21,25 @@ namespace Splatter.Pmc
             get { return RuntimeInformation.IsOSPlatform(OSPlatform.Windows); }
         }
 
+        /// <summary>Kills [p], taking the whole tree where the runtime supports it. Unity's
+        /// netstandard2.1 profile has no <c>Kill(entireProcessTree)</c> overload — cloudflared
+        /// spawns no children, so a plain <c>Kill()</c> is equivalent there.</summary>
+        internal static void KillTree(Process p)
+        {
+            if (p == null) return;
+#if NETCOREAPP3_0_OR_GREATER
+            try { p.Kill(true); }
+            catch
+            {
+                try { p.Kill(); }
+                catch { }
+            }
+#else
+            try { p.Kill(); }
+            catch { }
+#endif
+        }
+
         // --- process spawn ------------------------------------------------------------
 
         /// <summary>Spawns [bin] with [args], stderr+stdout redirected. Batch files go through cmd /c on
@@ -68,7 +87,8 @@ namespace Splatter.Pmc
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ||
                 RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ||
                 RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
-                RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD))
+                // OSPlatform.FreeBSD only exists on .NET 7+; Create() keeps netstandard2.1 (Unity) working.
+                RuntimeInformation.IsOSPlatform(OSPlatform.Create("FREEBSD")))
             {
                 if (LooksMobile())
                     return "cloudflared can't run as a subprocess on this platform";
@@ -477,12 +497,8 @@ namespace Splatter.Pmc
             if (PidLooksLikeCloudflared(pid, (string)data["exe"] ?? ""))
             {
                 Log(LogPrefix + " killing leftover cloudflared (pid " + pid + ") recorded in " + p);
-                try { Process.GetProcessById(pid).Kill(true); }
-                catch
-                {
-                    try { Process.GetProcessById(pid).Kill(); }
-                    catch { }
-                }
+                try { KillTree(Process.GetProcessById(pid)); }
+                catch { }
             }
             else
             {
@@ -639,12 +655,7 @@ namespace Splatter.Pmc
                     var se = p.StandardError.ReadToEndAsync();
                     if (!p.WaitForExit(15000))
                     {
-                        try { p.Kill(true); }
-                        catch
-                        {
-                            try { p.Kill(); }
-                            catch { }
-                        }
+                        KillTree(p);
                         return -1;
                     }
                     output = (SafeResult(so) + SafeResult(se)).Trim();

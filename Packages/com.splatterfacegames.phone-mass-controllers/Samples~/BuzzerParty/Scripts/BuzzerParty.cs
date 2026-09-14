@@ -254,19 +254,20 @@ namespace Splatter.Pmc.Demo
             Changed();
         }
 
-        private void OnMessage(PmcPlayer p, JToken data)
+        private void OnMessage(PmcPlayer p, object data)
         {
             if (data == null)
                 return;
-            if (data.Type == JTokenType.Bytes)
+            var bin = data as byte[];
+            if (bin != null)
             {
                 // Binary echo: phones use it as a latency probe.
-                host.Host.Send(p, ((JValue)data).Value as byte[]);
+                host.Host.Send(p, bin);
                 return;
             }
-            if (data.Type != JTokenType.Object)
+            var d = data as JObject;
+            if (d == null)
                 return;
-            var d = (JObject)data;
             switch (d.Value<string>("type"))
             {
                 case "buzz":

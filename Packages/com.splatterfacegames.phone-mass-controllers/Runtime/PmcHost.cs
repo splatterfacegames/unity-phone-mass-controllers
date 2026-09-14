@@ -150,8 +150,8 @@ namespace Splatter.Pmc
         public event Action<PmcPlayer, string> PlayerLeft;
         /// <summary>A player sent the correct AdminPin.</summary>
         public event Action<PmcPlayer> AdminAuthenticated;
-        /// <summary>A game message: the JSON d value of a msg frame, or a JToken of type Bytes for binary frames.</summary>
-        public event Action<PmcPlayer, JToken> MessageReceived;
+        /// <summary>A game message: the JToken d value of a msg frame, or a byte[] for binary frames.</summary>
+        public event Action<PmcPlayer, object> MessageReceived;
         /// <summary>The join URL changed (start, port, AdvertiseUrl, JoinCode, tunnel).</summary>
         public event Action<string> JoinUrlChanged;
         /// <summary>Fired once when no phone has joined within NoJoinsHintSeconds of the join URL being shown.</summary>

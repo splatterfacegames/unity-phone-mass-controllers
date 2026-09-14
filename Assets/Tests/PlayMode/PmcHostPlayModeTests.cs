@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -66,14 +67,14 @@ namespace Splatter.Pmc.Tests
                 Assert.GreaterOrEqual(qr.width, (21 + 8) * modulePx, "at least a v1 code + quiet zone");
                 Assert.AreEqual(FilterMode.Point, qr.filterMode);
                 // Quiet zone corners must be white.
-                Color32 c = qr.GetPixel32(0, 0);
-                Assert.AreEqual(255, c.r);
+                Color32[] px = qr.GetPixels32();
+                Assert.AreEqual(255, px[0].r);
                 // ...and there must be at least one dark module somewhere.
                 bool anyDark = false;
                 for (int y = 0; y < qr.height && !anyDark; y += 7)
                 {
                     for (int x = 0; x < qr.width && !anyDark; x += 5)
-                        anyDark = qr.GetPixel32(x, y).r < 128;
+                        anyDark = px[y * qr.width + x].r < 128;
                 }
                 Assert.IsTrue(anyDark, "QR has no dark modules");
             }
@@ -107,14 +108,15 @@ namespace Splatter.Pmc.Tests
                 // total modules = 2 + 2*1 = 4 → 12 px
                 Assert.AreEqual(12, tex.width);
                 Assert.AreEqual(12, tex.height);
+                Color32[] px = tex.GetPixels32();
                 // Matrix row 0 is the TOP scanline. Module (0,0) → texture rows 6..8, cols 3..5.
-                Assert.Less(tex.GetPixel32(4, 7).r, 128, "top-left module should be dark");
+                Assert.Less(px[7 * tex.width + 4].r, 128, "top-left module should be dark");
                 // Module (1,1) → rows 3..5, cols 6..8.
-                Assert.Less(tex.GetPixel32(7, 4).r, 128, "bottom-right module should be dark");
+                Assert.Less(px[4 * tex.width + 7].r, 128, "bottom-right module should be dark");
                 // Light modules and quiet zone stay white.
-                Assert.AreEqual(255, tex.GetPixel32(7, 7).r, "top-right module should be light");
-                Assert.AreEqual(255, tex.GetPixel32(0, 0).r, "quiet zone should be light");
-                Assert.AreEqual(255, tex.GetPixel32(11, 11).r, "quiet zone should be light");
+                Assert.AreEqual(255, px[7 * tex.width + 7].r, "top-right module should be light");
+                Assert.AreEqual(255, px[0].r, "quiet zone should be light");
+                Assert.AreEqual(255, px[11 * tex.width + 11].r, "quiet zone should be light");
             }
             finally
             {
@@ -125,7 +127,7 @@ namespace Splatter.Pmc.Tests
         [Test]
         public void FromMatrixRejectsBadInput()
         {
-            Assert.IsNull(PmcQrTexture.FromMatrix(null));
+            Assert.IsNull(PmcQrTexture.FromMatrix((bool[,])null));
             Assert.IsNull(PmcQrTexture.FromMatrix(new bool[2, 2], 0));
             Assert.IsNull(PmcQrTexture.FromMatrix(new bool[0, 0]));
             Assert.IsNull(PmcQrTexture.FromMatrix(new bool[2, 3], 1, 0), "non-square matrix");

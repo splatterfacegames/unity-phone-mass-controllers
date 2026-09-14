@@ -154,7 +154,7 @@ namespace Splatter.Pmc.Editor {
                 if (_downloading) {
                     var r = EditorGUILayout.GetControlRect(false, EditorGUIUtility.singleLineHeight,
                         GUILayout.MinWidth(100));
-                    float p = _tunnel != null ? _tunnel.DownloadProgress : -1f;
+                    float p = _tunnel != null ? _tunnel.GetDownloadProgress() : -1f;
                     EditorGUI.ProgressBar(r, Mathf.Clamp01(p), p < 0f ? "downloading…" : (p * 100f).ToString("0") + "%");
                 }
             }

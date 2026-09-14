@@ -740,13 +740,9 @@ namespace Splatter.Pmc
                 try
                 {
                     if (!proc.HasExited)
-                        proc.Kill(true);
+                        KillTree(proc);
                 }
-                catch
-                {
-                    try { proc.Kill(); }
-                    catch { }
-                }
+                catch { }
                 JoinQuiet(_watcher); // the watcher joins the readers after WaitForExit
                 try { proc.Dispose(); }
                 catch { }

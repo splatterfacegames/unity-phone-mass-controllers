@@ -82,7 +82,7 @@ public sealed class PmcHostCore : IDisposable {
     event Action<PmcPlayer> PlayerJoined, PlayerRejoined, PlayerDisconnected, PlayerUpdated;
     event Action<PmcPlayer, string> PlayerLeft;
     event Action<PmcPlayer> AdminAuthenticated;
-    event Action<PmcPlayer, JToken> MessageReceived;    // JToken or byte[] for binary frames
+    event Action<PmcPlayer, object> MessageReceived;    // JToken for msg frames, byte[] for binary frames
     event Action<string> JoinUrlChanged;
     event Action NoJoinsHint;
     event Action<string, string> TunnelStateChanged;    // state, detail/url
