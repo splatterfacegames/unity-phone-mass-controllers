@@ -58,6 +58,7 @@ internal static class Program {
         Console.WriteLine("PMC_READY port=" + _host.BoundPort);
         Console.Out.Flush();
 
+        RaiseTimerResolution();
         long frameTicks = (long)(Stopwatch.Frequency / Math.Max(1, fps));
         long prev = Stopwatch.GetTimestamp();
         while (true) {
@@ -102,6 +103,16 @@ internal static class Program {
 
     private static long ToUsec(long ticks) {
         return ticks * 1000000L / Stopwatch.Frequency;
+    }
+
+    // Windows sleeps in ~15.6 ms slices by default; a 60 fps loop needs 1 ms granularity
+    // (Godot does the same via timeBeginPeriod).
+    [System.Runtime.InteropServices.DllImport("winmm.dll")]
+    private static extern uint timeBeginPeriod(uint uMilliseconds);
+
+    private static void RaiseTimerResolution() {
+        if (!OperatingSystem.IsWindows()) return;
+        try { timeBeginPeriod(1); } catch (Exception) { }
     }
 
     private static void OnMessage(PmcPlayer p, object d) {
