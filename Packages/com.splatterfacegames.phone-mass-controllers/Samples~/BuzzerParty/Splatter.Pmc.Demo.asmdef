@@ -1,8 +1,10 @@
 {
-    "name": "Splatter.Pmc",
-    "rootNamespace": "Splatter.Pmc",
+    "name": "Splatter.Pmc.Demo",
+    "rootNamespace": "Splatter.Pmc.Demo",
     "references": [
+        "Splatter.Pmc",
         "Splatter.Pmc.Core",
+        "UnityEngine.UI",
         "Unity.Newtonsoft.Json"
     ],
     "includePlatforms": [],
