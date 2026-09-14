@@ -13,7 +13,7 @@ same `pmc.js`, the same `pmc.*` messages; a phone cannot tell which engine is ho
 - Engine: Unity **2021.3+**, developed/tested on **Unity 6 (6000.3.24f1)**.
 - Pure C#. No native binaries in the repo, no third-party asset dependencies.
   JSON via `com.unity.nuget.newtonsoft-json`.
-- License: MIT. Repo: `jethac/unity-phone-mass-controllers`.
+- License: MIT. Repo: `splatterfacegames/unity-phone-mass-controllers`.
 - Package: `Packages/com.splatterfacegames.phone-mass-controllers/` — namespace `Splatter.Pmc`.
 - C# surface is pinned in [docs/API_CONTRACT.md](docs/API_CONTRACT.md).
 
@@ -112,14 +112,29 @@ Authoritative signatures: [docs/API_CONTRACT.md](docs/API_CONTRACT.md). Shape fo
 
 ```csharp
 // glue — what a Unity dev puts on a GameObject
+[ExecuteAlways]
 [AddComponentMenu("Splatter/Phone Mass Controllers")]
 public sealed class PmcHost : MonoBehaviour {
-    // [SerializeField] mirror of every PmcHostCore setting; pushed into Host on Awake
+    // [SerializeField] mirror of every PmcHostCore setting; pushed into Host when it's
+    // created (Awake/first access). ApplySettings() re-pushes; Host exists before Start()
+    // so code can wire events early. Every core event is re-raised on PmcHost under the
+    // same name, so `host.PlayerJoined += …` works without touching .Host.
     public PmcHostCore Host { get; }
-    public Texture2D QrTexture(int modulePx = 8);   // PmcQr matrix → Texture2D
-    // Update() → Host.Poll() — all host events fire on the main thread here
+    public bool Running { get; }  public int BoundPort { get; }
+    public string ResolvedControllerDir { get; }
+    public int StartHost();       // ApplySettings + Host.Start() — works in edit mode too
+    public void StopHost();       public void Poll();
+    public string JoinUrl();
+    public Texture2D QrTexture(int modulePx = 8);   // PmcQrMatrix → Texture2D; null until Running
+    // Start() → StartHost() when Autostart; Update() → Host.Poll() — all host events fire
+    // on the main thread there. Edit mode: EditorApplication.update pumps it instead.
+    // OnEnable/OnDisable register it in PmcLiveHosts.All (the dock + tests read it);
+    // OnDestroy/OnDisable stop the host; OnApplicationQuit disposes it.
 }
+public static class PmcLiveHosts { public static IReadOnlyList<PmcHost> All; }
+```
 
+```csharp
 // core — engine-free; usable in tests, headless servers, editor pumps
 public sealed class PmcHostCore : IDisposable {
     // settings (mirror the Godot exports): Port, PortSearch, BindAddress, ControllerDir,
@@ -233,10 +248,18 @@ another provider, see docs/tunnels.md) for anything you want to print or keep.
 a throwaway test tunnel, and docs links.
 
 - **Live status.** Play mode runs in-process, so the dock reads `PmcLiveHosts.All` — a static registry each
-  running `PmcHost` joins — directly: port, join URL + QR preview, connected players, tunnel state. No
-  debugger channel needed (simpler than the Godot version).
-- **Edit-mode hosting.** `PmcHost` can run in edit mode too (useful for testing controllers without Play):
-  the same pump runs off `EditorApplication.update` inside `#if UNITY_EDITOR`.
+  enabled `PmcHost` joins (OnEnable) and leaves (OnDisable/OnDestroy) — directly: port, join URL + QR
+  preview, connected players, tunnel state. No debugger channel needed (simpler than the Godot version).
+- **Edit-mode hosting.** `PmcHost` is `[ExecuteAlways]` and can run in edit mode (useful for testing
+  controllers without Play, and it's how the dock drives its test tunnel): the same pump runs off
+  `EditorApplication.update` inside `#if UNITY_EDITOR`, gated by `Application.isPlaying` so Update()
+  never double-pumps in Play.
+- **ControllerDir.** Serialized as a project-relative string (`Assets/…`/`Packages/…` —
+  Inspector-friendly, portable). `PmcHost.ResolveControllerDir` maps it: `StreamingAssets[/…]` →
+  under `Application.streamingAssetsPath`; rooted/`scheme://` paths pass through; anything else is a
+  project path — resolved against the project in the Editor, and in a player build to
+  `StreamingAssets/pmc/<folder name>` where the build preprocessor copied it. The serialized value
+  never changes; `PmcHost.ResolvedControllerDir` reports the resolved one.
 - **Builds.** A build preprocessor copies each `PmcHost`'s `ControllerDir` (project-relative) plus the
   package `Web/` SDK into `StreamingAssets/pmc/` before a player build, so served files survive import
   settings. ServeDirectory paths inside `Assets/` resolve the same way at runtime.

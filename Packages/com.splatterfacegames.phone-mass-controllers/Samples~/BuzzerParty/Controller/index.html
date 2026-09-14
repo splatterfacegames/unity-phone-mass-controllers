@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#101226">
+<title>Buzzer Party</title>
+<link rel="stylesheet" href="style.css">
+<script type="module" src="controller.js"></script>
+</head>
+<body>
+
+<div id="banner" class="banner" hidden>Reconnecting…</div>
+<div id="moved" class="banner moved" hidden>The join link changed — re-scan the QR on the big screen</div>
+
+<!-- Join / change look -->
+<main id="join" class="screen" hidden>
+  <h1 class="logo">Buzzer<span>Party</span></h1>
+  <form id="join-form" autocomplete="off">
+    <label class="field">
+      <span>Your name</span>
+      <input id="name" name="name" maxlength="16" placeholder="e.g. Sam" required>
+    </label>
+    <fieldset>
+      <legend>Colour</legend>
+      <div id="colors" class="swatches"></div>
+    </fieldset>
+    <fieldset>
+      <legend>Avatar</legend>
+      <div id="emojis" class="emojis"></div>
+    </fieldset>
+    <div class="preview"><span id="preview-avatar" class="avatar big"></span></div>
+    <button id="join-btn" class="primary" type="submit">Join game</button>
+  </form>
+</main>
+
+<!-- Playing -->
+<main id="play" class="screen" hidden>
+  <header class="me">
+    <span id="me-avatar" class="avatar"></span>
+    <div class="me-text">
+      <strong id="me-name"></strong>
+      <small id="me-status"><i class="dot"></i><span id="me-status-text">connecting</span></small>
+    </div>
+    <div class="me-score"><b id="me-score">0</b><small>points</small></div>
+  </header>
+
+  <p id="phase" class="phase">Waiting for the host to start…</p>
+
+  <section id="secret" class="secret" hidden>
+    <small>Your secret symbol</small>
+    <div id="secret-shape" class="shape"></div>
+    <strong id="secret-label"></strong>
+  </section>
+
+  <button id="buzzer" class="buzzer" type="button" disabled>
+    <span>BUZZ</span>
+  </button>
+  <p id="feedback" class="feedback" aria-live="polite">&nbsp;</p>
+
+  <section class="card">
+    <h2>Scores</h2>
+    <ol id="scores" class="scores"></ol>
+  </section>
+
+  <section id="admin" class="card admin">
+    <h2>Host controls</h2>
+    <form id="pin-form" class="pin-row" autocomplete="off">
+      <input id="pin" inputmode="numeric" maxlength="8" placeholder="Admin PIN">
+      <button type="submit">Unlock</button>
+    </form>
+    <div id="admin-tools" hidden>
+      <div class="row">
+        <button id="adm-start" class="primary" type="button">Start</button>
+        <button id="adm-next" type="button">Next</button>
+        <button id="adm-reset" type="button">New match</button>
+      </div>
+      <ul id="adm-players" class="adm-players"></ul>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <button id="edit-btn" class="link" type="button">Change look</button>
+    <span id="latency">– ms</span>
+    <button id="leave-btn" class="link" type="button">Leave</button>
+  </footer>
+</main>
+
+<!-- Terminal states: kicked, replaced, rejected, left -->
+<main id="ended" class="screen ended" hidden>
+  <div class="card">
+    <h2 id="ended-title">Disconnected</h2>
+    <p id="ended-text"></p>
+    <form id="code-form" class="pin-row" autocomplete="off" hidden>
+      <input id="code" maxlength="8" placeholder="Room code" autocapitalize="characters">
+      <button type="submit">Join</button>
+    </form>
+    <button id="ended-btn" class="primary" type="button">Join again</button>
+  </div>
+</main>
+
+</body>
+</html>

@@ -27,37 +27,60 @@ Unity port of [godot-phone-mass-controllers](https://github.com/splatterfacegame
 **UPM (recommended):** Package Manager → `+` → *Add package from git URL…*
 
 ```
-https://github.com/jethac/unity-phone-mass-controllers.git?path=/Packages/com.splatterfacegames.phone-mass-controllers
+https://github.com/splatterfacegames/unity-phone-mass-controllers.git?path=/Packages/com.splatterfacegames.phone-mass-controllers
 ```
 
 **unitypackage:** download `phone-mass-controllers.unitypackage` from
-[Releases](https://github.com/jethac/unity-phone-mass-controllers/releases) → Assets → Import Package.
+[Releases](https://github.com/splatterfacegames/unity-phone-mass-controllers/releases) → Assets → Import Package.
 
 ## Quickstart
 
+Add a `PmcHost` to a GameObject (*Add Component → Splatter → Phone Mass Controllers*), set
+**Controller Dir** to your controller page folder (e.g. `Assets/MyGame/Controller`), tick
+**Autostart** — or do it in code:
+
 ```csharp
 using Splatter.Pmc;
+using UnityEngine;
+using UnityEngine.UI;
 
 public class Party : MonoBehaviour {
-    [SerializeField] PmcHost host;            // Add Component → Splatter → Phone Mass Controllers
+    [SerializeField] PmcHost host;      // or GetComponent<PmcHost>() — same GameObject
+    [SerializeField] RawImage qrImage;  // on your lobby canvas
 
     void Awake() {
-        host.ControllerDir = Application.streamingAssetsPath + "/pmc/controller";
-        host.Host.MessageReceived += OnMessage;
-        host.Host.Start();
-        qrImage.texture = host.QrTexture();   // RawImage on your lobby canvas
+        host.ControllerDir = "Assets/MyGame/Controller";
+        // Same events as PmcHostCore — Host exposes the full surface too:
+        host.PlayerJoined += p => Debug.Log(p.Name + " joined");
+        host.MessageReceived += OnMessage;
+    }
+    void Start() {
+        if (!host.Running) host.StartHost();
+        qrImage.texture = host.QrTexture();   // null until the host is Running
     }
     void OnMessage(PmcPlayer p, Newtonsoft.Json.Linq.JToken data) { /* … */ }
 }
 ```
 
-Controller pages are plain HTML/JS importing `pmc.js`:
+**ControllerDir resolution** (the build preprocessor copies project folders into the player):
+
+- `Assets/...` or `Packages/...` — Editor: resolved against the project; player build:
+  `StreamingAssets/pmc/<folder name>` (the preprocessor copies it there before the build).
+- `StreamingAssets/...` — resolved under `Application.streamingAssetsPath` as-is.
+- absolute path (or `scheme://…`) — used verbatim.
+
+All host events fire on the main thread inside `PmcHost.Poll()` (called from `Update()` — or
+`EditorApplication.update` in edit mode, so hosts can run without entering Play). Find running
+hosts via `PmcLiveHosts.All`.
+
+Controller pages are plain HTML/JS importing `pmc.js` (served by the host at `/pmc/pmc.js`):
 
 ```html
 <script type="module">
-  import pmc from '/pmc/pmc.js';
+  import { connect, feedback, keepScreenOn } from '/pmc/pmc.js';
+  const pmc = connect({ name: 'Player' });
   pmc.on('message', (d) => { /* game → phone */ });
-  buzzer.onclick = () => pmc.send({ t: 'buzz' });   // phone → game
+  buzzer.onclick = () => { pmc.send({ type: 'buzz', at: pmc.timestamp() }); feedback('buzz'); };
 </script>
 ```
 

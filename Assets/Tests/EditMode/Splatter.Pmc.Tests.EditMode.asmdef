@@ -1,0 +1,26 @@
+{
+    "name": "Splatter.Pmc.Tests.EditMode",
+    "rootNamespace": "Splatter.Pmc.Tests",
+    "references": [
+        "Splatter.Pmc",
+        "Splatter.Pmc.Core",
+        "Splatter.Pmc.Demo",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
