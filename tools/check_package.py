@@ -157,7 +157,9 @@ def main() -> int:
         for p in problems:
             print("  " + p, file=sys.stderr)
         return 1
-    print(f"check_package: OK ({n_asmdefs} asmdefs, package.json v{json.load(open(os.path.join(repo, PKG_DIR, 'package.json')))['version']})")
+    with open(os.path.join(repo, PKG_DIR, "package.json"), encoding="utf-8") as f:
+        ver = json.load(f).get("version", "?")
+    print(f"check_package: OK ({n_asmdefs} asmdefs, package.json v{ver})")
     return 0
 
 

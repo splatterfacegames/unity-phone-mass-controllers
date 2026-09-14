@@ -48,3 +48,7 @@ export/
 # Local Unity batchmode logs
 /upmc-unity.log
 *.log.meta
+
+# Node
+node_modules/
+tests/**/node_modules/

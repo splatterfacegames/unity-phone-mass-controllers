@@ -13,7 +13,7 @@ same `pmc.js`, the same `pmc.*` messages; a phone cannot tell which engine is ho
 - Engine: Unity **2021.3+**, developed/tested on **Unity 6 (6000.3.24f1)**.
 - Pure C#. No native binaries in the repo, no third-party asset dependencies.
   JSON via `com.unity.nuget.newtonsoft-json`.
-- License: MIT. Repo: `jethac/unity-phone-mass-controllers`.
+- License: MIT. Repo: `splatterfacegames/unity-phone-mass-controllers`.
 - Package: `Packages/com.splatterfacegames.phone-mass-controllers/` — namespace `Splatter.Pmc`.
 - C# surface is pinned in [docs/API_CONTRACT.md](docs/API_CONTRACT.md).
 
@@ -229,7 +229,7 @@ another provider, see docs/tunnels.md) for anything you want to print or keep.
 ## 6. Unity editor integration
 
 Install via UPM git URL
-`https://github.com/jethac/unity-phone-mass-controllers.git?path=/Packages/com.splatterfacegames.phone-mass-controllers`
+`https://github.com/splatterfacegames/unity-phone-mass-controllers.git?path=/Packages/com.splatterfacegames.phone-mass-controllers`
 or the `phone-mass-controllers.unitypackage` attached to each release (imports into
 `Assets/PhoneMassControllers/` — see README for the mapping).
 

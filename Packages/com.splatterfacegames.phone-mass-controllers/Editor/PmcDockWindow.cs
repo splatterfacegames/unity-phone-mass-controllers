@@ -22,13 +22,13 @@ namespace Splatter.Pmc.Editor {
 
         static readonly KeyValuePair<string, string>[] Links = {
             new KeyValuePair<string, string>("README",
-                "https://github.com/jethac/unity-phone-mass-controllers#readme"),
+                "https://github.com/splatterfacegames/unity-phone-mass-controllers#readme"),
             new KeyValuePair<string, string>("Spec: outside-LAN join",
-                "https://github.com/jethac/unity-phone-mass-controllers/blob/main/SPEC.md#5-outside-lan-join-cloudflare-tunnels-quick--named"),
+                "https://github.com/splatterfacegames/unity-phone-mass-controllers/blob/main/SPEC.md#5-outside-lan-join-cloudflare-tunnels-quick--named"),
             new KeyValuePair<string, string>("Exporting / StreamingAssets",
-                "https://github.com/jethac/unity-phone-mass-controllers/blob/main/docs/exporting.md"),
+                "https://github.com/splatterfacegames/unity-phone-mass-controllers/blob/main/docs/exporting.md"),
             new KeyValuePair<string, string>("Known tunnel caveats",
-                "https://github.com/jethac/unity-phone-mass-controllers/issues?q=is%3Aissue+label%3Atunnel"),
+                "https://github.com/splatterfacegames/unity-phone-mass-controllers/issues?q=is%3Aissue+label%3Atunnel"),
             new KeyValuePair<string, string>("Cloudflare Quick Tunnels",
                 "https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/do-more-with-tunnels/trycloudflare/"),
         };

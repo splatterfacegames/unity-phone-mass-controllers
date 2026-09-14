@@ -44,7 +44,7 @@ PKG_DIR = "Packages/com.splatterfacegames.phone-mass-controllers"
 PKG_NAME = "phone-mass-controllers"
 DEST_ROOT = "Assets/PhoneMassControllers"
 # Namespace seed for synthesized GUIDs — stable per repo-relative path.
-UUID5_SEED = "https://github.com/jethac/unity-phone-mass-controllers/"
+UUID5_SEED = "https://github.com/splatterfacegames/unity-phone-mass-controllers/"
 
 # Repo-relative source prefix -> unitypackage destination prefix. Order matters:
 # longest/most specific prefixes first.
