@@ -281,6 +281,20 @@ namespace Splatter.Pmc
             return _proc != null && !_proc.HasExited;
         }
 
+        // --- Test/host seams (probed by PmcTunnelSeam + tests/dotnet/HostMirror) -------------
+
+        /// <summary>The local port this tunnel forwards to; mirrors <see cref="Port"/> but settable
+        /// so tests can fake adoption/retarget without spawning a process.</summary>
+        internal int LocalPort { get { return _port; } set { _port = value; } }
+
+        /// <summary>Test override: when true, <see cref="PmcTunnelSeam.IsProcessAlive"/> reports the
+        /// child as alive regardless of process state. Never set by production code.</summary>
+        internal bool _isProcessAlive;
+
+        /// <summary>Marked when the tunnel must outlive its host object (host detaches it into a
+        /// static registry on Stop instead of killing it). <see cref="Dispose"/> honors it.</summary>
+        internal bool Detached;
+
         /// <summary>Download progress 0.0–1.0, or -1 when no download is running or its size is unknown.</summary>
         public float GetDownloadProgress()
         {
@@ -294,7 +308,7 @@ namespace Splatter.Pmc
         /// "stopped" (the Godot PREDELETE path did the same; subscribers may already be gone).</summary>
         public void Dispose()
         {
-            KillInternal(true);
+            if (!Detached) KillInternal(true);
         }
 
         // --- Pump: the only place queued events are applied ------------------------

@@ -11,6 +11,7 @@ namespace Splatter.Pmc {
     internal static class PmcTunnelSeam {
         private static PropertyInfo _aliveProp;      // IsProcessAlive | IsRunning
         private static MethodInfo _aliveMethod;      // IsProcessAlive() | IsRunning() | is_running()
+        private static FieldInfo _aliveField;        // _isProcessAlive (test override)
         private static PropertyInfo _portProp;       // LocalPort | _port
         private static FieldInfo _portField;
         private static PropertyInfo _detachedProp;   // Detached | detached
@@ -23,6 +24,7 @@ namespace Splatter.Pmc {
             _aliveMethod = t.GetMethod("IsProcessAlive", F, null, Type.EmptyTypes, null)
                 ?? t.GetMethod("IsRunning", F, null, Type.EmptyTypes, null)
                 ?? t.GetMethod("is_running", F, null, Type.EmptyTypes, null);
+            _aliveField = t.GetField("_isProcessAlive", F) ?? t.GetField("_forceProcessAlive", F);
             _portProp = t.GetProperty("LocalPort", F);
             if (_portProp == null || !_portProp.CanRead) _portProp = null;
             _portField = _portProp == null ? (t.GetField("_port", F) ?? t.GetField("LocalPort", F)) : null;
@@ -37,6 +39,10 @@ namespace Splatter.Pmc {
             if (t == null) return false;
             if (!_probed) Probe(t.GetType());
             try {
+                if (_aliveField != null) {
+                    object v = _aliveField.GetValue(t);
+                    if (v is bool && (bool)v) return true;
+                }
                 if (_aliveProp != null) return (bool)_aliveProp.GetValue(t, null);
                 if (_aliveMethod != null) return (bool)_aliveMethod.Invoke(t, null);
             } catch (Exception) {
