@@ -6,11 +6,13 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <AssemblyName>Splatter.Pmc.Core.Tests</AssemblyName>
     <IsPackable>false</IsPackable>
+    <!-- globs below are explicit; the default **/*.cs would double-include local files -->
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
   <ItemGroup>
     <!-- Every Core file compiles here too; keep Runtime/Core engine-free. -->
     <Compile Include="..\..\Packages\com.splatterfacegames.phone-mass-controllers\Runtime\Core\**\*.cs" />
-    <Compile Include="**\*.cs" />
+    <Compile Include="**\*.cs" Exclude="bin\**\*.cs;obj\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NUnit" Version="4.2.2" />
