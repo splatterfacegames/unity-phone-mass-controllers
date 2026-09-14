@@ -21,9 +21,9 @@ same `pmc.js`, the same `pmc.*` messages; a phone cannot tell which engine is ho
 
 One TCP port serves both HTTP/1.1 and WebSocket (RFC 6455), so a single tunnel hostname works.
 
-- The addon has its own HTTP/1.1 request parser and WebSocket server implementation on `TCPServer` +
-  `StreamPeerTCP`. Godot's `WebSocketPeer.accept_stream` can't share a port with HTTP once the
-  headers have been read.
+- The package has its own HTTP/1.1 request parser and WebSocket server implementation on
+  `TcpListener`/`Socket`. (The Godot original hand-rolls the same pair — a stock WebSocket
+  implementation can't share a port with HTTP once the headers have been read.)
 - WS upgrade path: `GET /pmc/ws`. Everything else is HTTP.
 - WS must support:
   - masking (client→server required)
@@ -31,36 +31,41 @@ One TCP port serves both HTTP/1.1 and WebSocket (RFC 6455), so a single tunnel h
   - fragmentation / continuation reassembly
   - ping/pong control frames
   - close handshake with codes
-  - payloads up to `max_message_bytes` (default 1 MiB)
+  - payloads up to `MaxMessageBytes` (default 1 MiB)
   - rejecting unmasked client frames and oversize messages
 - No extensions (permessage-deflate is not negotiated).
 - HTTP must support:
   - GET/HEAD
-  - keep-alive
-  - `Content-Length` responses, and chunked or streamed large file writes without blocking the frame
-  - 400/404/405/413/500
+  - keep-alive + pipelining (serialized per connection so a pipelined head never overtakes a
+    streamed file body)
+  - `Content-Length` responses, and streamed large-file writes without blocking `Poll()`
+  - 301/400/404/405/408/413/416/426/429/431/500/501/505
   - path-traversal protection
   - MIME by extension
   - `Cache-Control: no-cache` for html/js
-- Non-blocking. Poll from `_process` (or an optional internal thread; default is main thread).
-  Per-frame I/O budget, so a slow phone can't stall the game.
-- `bind_address` default `"*"`. `port` default 8080. If busy, try the next port up to `port + port_search`
-  (default 20), and emit/return the actual port.
-- Delivery order is guaranteed **per player (per socket), not across players**: `send`/`broadcast` queue
+  - single-range `Range` requests (206 / 416; multi-ranges fall back to 200)
+- Non-blocking. A dedicated I/O worker thread owns accept/read/write/frame-decode; the game thread
+  calls `Poll()` per frame to drain complete events and run all logic, bounded by `IoBudgetMsec`
+  (default 8 ms), so a slow phone can't stall the game. One mode only — the Godot io-thread design,
+  always on.
+- `BindAddress` default `"*"`. `Port` default 8080. If busy, try the next port up to
+  `Port + PortSearch` (default 20), and expose the actual port via `BoundPort`.
+- Delivery order is guaranteed **per player (per socket), not across players**: `Send`/`Broadcast` queue
   frames that are flushed in the host's round-robin service order, so a frame queued for socket A and then
   one for socket B can reach B first. Tests and game logic must not rely on cross-player arrival order.
 
 Known limits of the built-in server (deliberate scope cuts — use the Cloudflare tunnel for `https`/`wss`):
 
-- **No TLS.** Plain `http`/`ws` on the LAN. `start_tunnel()` is the supported way to get TLS.
+- **No TLS.** Plain `http`/`ws` on the LAN. `StartTunnel()` is the supported way to get TLS.
 - **No permessage-deflate** — extensions are never negotiated.
 - **Request bodies:** `Content-Length` only; `Transfer-Encoding: chunked` gets 501.
 - **Caching:** no `ETag`/`If-None-Match`. `Range` supports a single range; multi-ranges are ignored (200).
 - **Symlinks** in served trees are resolved and confined to the served root (403 on escape).
-- **Reverse proxies:** only `CF-Connecting-IP` is trusted, and only while the tunnel is up. `Forwarded`/
-  `X-Forwarded-For` are ignored, so per-address limits behind another proxy see the proxy's address.
-- **Origin:** not checked on the WS upgrade by default; `check_origin` + `allowed_origins` opt in.
-- The join URL is IPv4-only (see §3 `lan_addresses`).
+- **Reverse proxies:** only `CF-Connecting-IP` is trusted, and only while the tunnel is up (and only
+  from a loopback peer). `Forwarded`/`X-Forwarded-For` are ignored, so per-address limits behind
+  another proxy see the proxy's address.
+- **Origin:** not checked on the WS upgrade by default; `CheckOrigin` + `AllowedOrigins` opt in.
+- The join URL is IPv4-only (see §3 `LanAddresses`).
 
 ## 2. Wire protocol
 
@@ -86,25 +91,25 @@ Host → client:
 | `pmc.welcome` | `id:int`, `token:string`, `name`, `profile`, `rejoined:bool`, `admin:bool`, `server_ms:int` (epoch ms UTC), `join_url:string` | |
 | `pmc.reject` | `code:string` (`bad_code`, `full`, `version`, `banned`, `bad_hello`), `reason:string` | then close 4000 |
 | `pmc.pong` | `c`, `s:int` (epoch ms UTC) | clock-offset estimate; `s` is wall-clock epoch ms, so `serverNow()` is comparable to `turn_ends_at_ms`-style deadlines stamped from `Time.get_unix_time_from_system() * 1000` |
-| `pmc.auth` | `ok:bool`, `locked_ms?:int`, `disabled?:bool` | 5 failures → 30 s per connection; 20 per address → 60 s; `admin_pin_max_failures` (default 20) across all addresses disables the PIN until restart (`disabled:true`) |
+| `pmc.auth` | `ok:bool`, `locked_ms?:int`, `disabled?:bool` | 5 failures → 30 s per connection; 20 per address → 60 s; `AdminPinMaxFailures` (default 20) across all addresses disables the PIN until restart (`disabled:true`) |
 | `pmc.kicked` | `reason:string` | then close 4001 |
 | `pmc.replaced` | | same token connected elsewhere, then close 4002 |
 | `pmc.moved` | `d.url:string` | join URL changed mid-session (tunnel replaced); sent before the old tunnel goes down. https→https pages may auto-follow; others should show "rescan/rejoin at the new URL" |
 | `msg` | `d:any` | game message |
 
 HTTP auth for custom routes: after join, pmc.js sets a `pmc_token` cookie (value = the rejoin token).
-`require_player(req)` maps `?t=<token>` or that cookie to the joined player; serve nothing private without it.
+`RequirePlayer(req)` maps `?t=<token>` or that cookie to the joined player; serve nothing private without it.
 
 While a tunnel is up the host is public: auto-generated join codes are 6 chars (24^6), and
 `/pmc/info.json` + `/pmc/qr.png` (which reveal the join URL) answer only to loopback or a request
 carrying a valid `?code=`. The controller page and `/pmc/pmc.js` stay public — phones need them to join.
 
 Identity: the token is a random 128-bit hex string issued by the host. The same token reconnecting within
-`grace_seconds` resumes the same `PMCPlayer` (same id, meta preserved) and emits `player_rejoined`. After grace
-expires the player is removed with `player_left(player, "timeout")`. A token seen after removal starts
-a new player, unless `remember_seconds` (default 3600) keeps a tombstone so the id and meta come back.
-Tombstones are written only on `"timeout"` removal (and on `kick(..., remember := true)`) — a plain
-`kick()` or `pmc.leave` drops the token, so the player comes back as someone new (new id, empty meta).
+`GraceSeconds` resumes the same `PmcPlayer` (same id, meta preserved) and emits `PlayerRejoined`. After grace
+expires the player is removed with `PlayerLeft(player, "timeout")`. A token seen after removal starts
+a new player, unless `RememberSeconds` (default 3600) keeps a tombstone so the id and meta come back.
+Tombstones are written only on `"timeout"` removal (and on `Kick(..., remember: true)`) — a plain
+`Kick()` or `pmc.leave` drops the token, so the player comes back as someone new (new id, empty meta).
 
 ## 3. C# API
 
